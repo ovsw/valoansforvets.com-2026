@@ -3,11 +3,20 @@
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useEffect, useTransition } from "react";
 
-export function RefreshButton() {
+// Polls while a job is still running, so staff see status change without reloading.
+export function RefreshButton({ live }: { live: boolean }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  useEffect(() => {
+    if (!live) return;
+    const timer = setInterval(
+      () => startTransition(() => router.refresh()),
+      4000,
+    );
+    return () => clearInterval(timer);
+  }, [live, router]);
   return (
     <Button
       variant="outline"
@@ -18,7 +27,7 @@ export function RefreshButton() {
       <RefreshCw
         className={pending ? "animate-spin motion-reduce:animate-none" : ""}
       />
-      {pending ? "Refreshing…" : "Refresh results"}
+      {pending ? "Refreshing…" : live ? "Checking for updates…" : "Refresh results"}
     </Button>
   );
 }

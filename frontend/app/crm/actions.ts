@@ -11,8 +11,8 @@ export async function createTestInquiry(_previous: string, formData: FormData) {
     await submitTestInquiry(parsed.data);
   } catch (error) {
     console.error("Test inquiry action failed", error);
-    return "The test could not finish. Refresh to check whether it was saved, then retry the same inquiry.";
+    return "The test could not finish. Close this panel, find the inquiry in the list, and retry it.";
   }
   revalidatePath("/crm");
-  return "Test inquiry saved. Refresh to see the job result.";
+  return "Test inquiry saved. The status updates here as the job runs.";
 }

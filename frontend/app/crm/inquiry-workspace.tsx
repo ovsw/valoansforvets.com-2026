@@ -215,7 +215,9 @@ export function InquiryWorkspace({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <RefreshButton />
+          <RefreshButton
+            live={inquiries.some((row) => row.jobStatus === "pending")}
+          />
           <Sheet>
             <SheetTrigger asChild>
               <Button>
