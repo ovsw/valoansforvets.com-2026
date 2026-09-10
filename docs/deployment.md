@@ -12,6 +12,10 @@ The Website and Studio are separate applications.
 
 Vercel may create preview deployments for pull requests. Production deploys come only from verified revisions merged into `main`.
 
+## Worker on Trigger.dev
+
+The `Deploy worker` GitHub Action migrates the test database and deploys the Trigger.dev worker when `main` changes worker or database files. See `trigger-setup.md` and `crm-preview-setup.md`.
+
 ## Studio on Sanity
 
 Add the values from `studio/.env.local.example`, then deploy manually from the repository root:

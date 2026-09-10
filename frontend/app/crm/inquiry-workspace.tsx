@@ -33,6 +33,8 @@ export type InquiryRow = {
   jobStatus: string;
   emailId: string | null;
   smsStatus: string;
+  lastError: string | null;
+  sms: { recipient: string; message: string; simulatedAt: string } | null;
 };
 
 function Status({ status }: { status: string }) {
@@ -91,6 +93,19 @@ function InquiryDetails({ inquiry }: { inquiry: InquiryRow }) {
         </SheetHeader>
         <div className="space-y-7 p-6">
           <Status status={inquiry.jobStatus} />
+          {inquiry.jobStatus === "failed" && inquiry.lastError && (
+            <div
+              role="alert"
+              className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+            >
+              <h3 className="font-semibold">Last error</h3>
+              <p className="mt-1">{inquiry.lastError}</p>
+              <p className="mt-2 text-xs">
+                Retry below. A retry never sends a second email for the same
+                inquiry.
+              </p>
+            </div>
+          )}
           <div>
             <h3 className="mb-2 text-sm font-semibold">Recipient</h3>
             <p className="break-all text-sm text-muted-foreground">
@@ -117,9 +132,19 @@ function InquiryDetails({ inquiry }: { inquiry: InquiryRow }) {
               <div>
                 <dt className="font-medium">Confirmation SMS</dt>
                 <dd className="mt-1 text-muted-foreground">
-                  {inquiry.smsStatus === "simulated"
-                    ? "Simulated. No text message was sent."
-                    : "Simulation pending."}
+                  {inquiry.sms ? (
+                    <>
+                      Simulated {createdLabel(inquiry.sms.simulatedAt)} ET. No
+                      text message was sent.
+                      <span className="mt-2 block rounded-md bg-muted p-3 text-xs">
+                        To: {inquiry.sms.recipient}
+                        <br />
+                        {inquiry.sms.message}
+                      </span>
+                    </>
+                  ) : (
+                    "Simulation pending."
+                  )}
                 </dd>
               </div>
             </dl>
@@ -155,9 +180,11 @@ function InquiryDetails({ inquiry }: { inquiry: InquiryRow }) {
 export function InquiryWorkspace({
   inquiries,
   inquiryId,
+  staffEmail,
 }: {
   inquiries: InquiryRow[];
   inquiryId: string;
+  staffEmail: string;
 }) {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
@@ -207,8 +234,9 @@ export function InquiryWorkspace({
               </SheetHeader>
               <div className="space-y-6 px-6">
                 <div className="rounded-lg border bg-muted/50 p-4 text-sm leading-6">
-                  Email goes only to <strong>ovi@ovswebsites.com</strong>. SMS
-                  is simulated. No borrower details are collected.
+                  The confirmation email goes to your own address,{" "}
+                  <strong>{staffEmail}</strong>. SMS is simulated. No borrower
+                  details are collected.
                 </div>
                 <TestForm inquiryId={inquiryId} />
               </div>

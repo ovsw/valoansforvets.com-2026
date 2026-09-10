@@ -3,24 +3,24 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { isStaffEmail } from "./policy";
 
-export async function staffUser() {
+export type Staff = { userId: string; email: string };
+
+export async function staffUser(): Promise<Staff | null> {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
   const user = await currentUser();
-  if (
-    !user?.emailAddresses.some((email) =>
-      isStaffEmail(
-        email.emailAddress,
-        email.verification?.status === "verified",
-      ),
-    )
-  )
-    return null;
-  return userId;
+  const staffEmail = user?.emailAddresses.find((email) =>
+    isStaffEmail(
+      email.emailAddress,
+      email.verification?.status === "verified",
+    ),
+  );
+  if (!staffEmail) return null;
+  return { userId, email: staffEmail.emailAddress.toLowerCase() };
 }
 
 export async function requireStaff() {
-  const userId = await staffUser();
-  if (!userId) throw new Error("Staff access is required.");
-  return userId;
+  const staff = await staffUser();
+  if (!staff) throw new Error("Staff access is required.");
+  return staff;
 }

@@ -19,7 +19,23 @@ Sanity Studio does not run these tasks.
 
 The task has no schedule. It sends no email and uses no private records.
 The local worker executes tasks on this computer. The dashboard stores run
-metadata and results. A production worker has not been deployed.
+metadata and results.
+
+## Hosted worker
+
+The `prod` environment runs the hosted worker for the test flow. The
+`Deploy worker` GitHub Action deploys it on every push to `main` that touches
+worker or database files. To deploy by hand after `pnpm trigger:login`:
+
+```sh
+pnpm --dir frontend exec trigger deploy --env prod
+```
+
+The hosted worker reads its environment variables from the Trigger.dev
+`prod` environment, not from Vercel. Set `PREVIEW_DATABASE_URL`,
+`PREVIEW_EMAIL_ENABLED`, `RESEND_API_KEY`, `RESEND_FROM`, and
+`TEST_EMAIL_ALLOWLIST` there. The Vercel `TRIGGER_SECRET_KEY` must be the
+`prod` secret key so the website dispatches to the hosted worker.
 
 ## Verified connection
 

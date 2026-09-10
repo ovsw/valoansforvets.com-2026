@@ -10,7 +10,9 @@ const mocks = vi.hoisted(() => ({
   key: vi.fn(),
 }));
 vi.mock("./auth", () => ({ requireStaff: mocks.staff }));
-vi.mock("./policy", () => ({ testRecipient: () => "ovi@ovswebsites.com" }));
+vi.mock("./policy", () => ({
+  isTestRecipient: (email: string) => email === "ovi@ovswebsites.com",
+}));
 vi.mock("@/db/client", () => ({ database: mocks.database }));
 vi.mock("@trigger.dev/sdk", () => ({
   tasks: { trigger: mocks.trigger },
@@ -20,7 +22,10 @@ import { submitTestInquiry } from "./inquiries";
 
 beforeEach(() => {
   vi.resetAllMocks();
-  mocks.staff.mockResolvedValue("staff");
+  mocks.staff.mockResolvedValue({
+    userId: "staff",
+    email: "ovi@ovswebsites.com",
+  });
   mocks.row.mockResolvedValue([
     { id: "inquiry", createdBy: "staff", jobStatus: "pending" },
   ]);
@@ -57,12 +62,18 @@ it("stops before database access when staff authorization fails", async () => {
   expect(mocks.database).not.toHaveBeenCalled();
 });
 
-it("does not dispatch another staff member's inquiry", async () => {
+it("lets any staff member retry another staff member's inquiry", async () => {
   mocks.row.mockResolvedValue([
     { createdBy: "another-staff", jobStatus: "pending" },
   ]);
-  await expect(submitTestInquiry("inquiry")).rejects.toThrow("not available");
-  expect(mocks.trigger).not.toHaveBeenCalled();
+  await submitTestInquiry("inquiry");
+  expect(mocks.trigger).toHaveBeenCalled();
+});
+
+it("refuses a staff member whose address is not a test recipient", async () => {
+  mocks.staff.mockResolvedValue({ userId: "staff", email: "new@example.com" });
+  await expect(submitTestInquiry("inquiry")).rejects.toThrow("test email list");
+  expect(mocks.database).not.toHaveBeenCalled();
 });
 
 it("does not dispatch a completed inquiry", async () => {
