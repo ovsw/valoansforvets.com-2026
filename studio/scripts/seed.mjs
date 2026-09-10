@@ -306,7 +306,6 @@ export const starterDocuments = [
           block("starter-story-copy", "This section proves image, caption, narrative, details, and buttons."),
           block("starter-story-quote", "Seed content is useful only until real content is ready.", "blockquote"),
         ],
-        keyDetails: { _type: "object", title: "Includes", items: ["Image", "Caption", "Details"] },
         buttons: [button("starter-story-button", "Open Blog", "blogIndex")],
       },
       {

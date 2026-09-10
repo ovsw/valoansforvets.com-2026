@@ -59,12 +59,12 @@ describe("RichTextContent", () => {
     expect(assetUrl.searchParams.get("fit")).toBe("max");
   });
 
-  it("renders callouts as aside content", () => {
+  it("renders callouts as non-urgent notes", () => {
     const { container } = render(
       <RichTextContent value={callout("Important", "Keep this in mind.")} />,
     );
 
-    const aside = container.querySelector("aside");
+    const aside = container.querySelector('[role="note"]');
     expect(aside).toBeInTheDocument();
     expect(screen.getByText("Important")).toBeInTheDocument();
     expect(screen.getByText("Keep this in mind.")).toBeInTheDocument();
@@ -83,6 +83,6 @@ describe("RichTextContent", () => {
   it("skips empty callouts", () => {
     const { container } = render(<RichTextContent value={callout(" ", " ")} />);
 
-    expect(container.querySelector("aside")).not.toBeInTheDocument();
+    expect(container.querySelector('[role="note"]')).not.toBeInTheDocument();
   });
 });

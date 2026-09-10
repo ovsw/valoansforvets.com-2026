@@ -7,6 +7,8 @@ export default defineConfig([
   ...nextTypeScript,
   globalIgnores([
     ".next/**",
+    ".trigger/**",
+    ".local/**",
     "legacy-donor-prototype/**",
     "out/**",
     "build/**",

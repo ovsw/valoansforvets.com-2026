@@ -23,7 +23,7 @@ describe("blog post count cache", () => {
   });
 
   test("does not query Sanity for the main blog route", async () => {
-    const { proxy: freshProxy } = await import("@/proxy");
+    const { blogProxy: freshProxy } = await import("@/proxy");
 
     const response = await freshProxy(
       new NextRequest("https://www.example.com/blog"),
@@ -34,7 +34,7 @@ describe("blog post count cache", () => {
   });
 
   test("passes post routes through without treating their slug as pagination", async () => {
-    const { proxy: freshProxy } = await import("@/proxy");
+    const { blogProxy: freshProxy } = await import("@/proxy");
 
     const response = await freshProxy(
       new NextRequest("https://www.example.com/blog/first-post"),
@@ -42,12 +42,12 @@ describe("blog post count cache", () => {
 
     expect(response.status).toBe(200);
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(config.matcher).toEqual(["/((?!_next|api|.*\\..*).*)"]);
+    expect(config.matcher).toContain("/((?!_next|api|.*\\..*).*)");
   });
 
   test("does not query Sanity for validated draft-mode pagination", async () => {
     vi.stubEnv("__NEXT_PREVIEW_MODE_ID", "preview-id");
-    const { proxy: freshProxy } = await import("@/proxy");
+    const { blogProxy: freshProxy } = await import("@/proxy");
 
     const response = await freshProxy(
       new NextRequest("https://www.example.com/blog/2/", {
@@ -61,7 +61,7 @@ describe("blog post count cache", () => {
 
   test("returns 404 when a pagination route is out of range", async () => {
     fetchMock.mockResolvedValueOnce(1);
-    const { proxy: freshProxy } = await import("@/proxy");
+    const { blogProxy: freshProxy } = await import("@/proxy");
 
     const response = await freshProxy(
       new NextRequest("https://www.example.com/blog/2/"),
@@ -79,7 +79,7 @@ describe("blog post count cache", () => {
           resolveFetch = resolve;
         }),
     );
-    const { proxy: freshProxy } = await import("@/proxy");
+    const { blogProxy: freshProxy } = await import("@/proxy");
     const requests = [1, 2, 3].map(() =>
       freshProxy(new NextRequest("https://www.example.com/blog/2/")),
     );
@@ -88,14 +88,16 @@ describe("blog post count cache", () => {
     resolveFetch(30);
 
     const responses = await Promise.all(requests);
-    expect(responses.map((response) => response.status)).toEqual([200, 200, 200]);
+    expect(responses.map((response) => response.status)).toEqual([
+      200, 200, 200,
+    ]);
   });
 
   test("fetches a fresh count after the cache expires", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));
     fetchMock.mockResolvedValueOnce(30).mockResolvedValueOnce(30);
-    const { proxy: freshProxy } = await import("@/proxy");
+    const { blogProxy: freshProxy } = await import("@/proxy");
     const request = () =>
       freshProxy(new NextRequest("https://www.example.com/blog/2/"));
 
@@ -113,7 +115,7 @@ describe("blog post count cache", () => {
     fetchMock
       .mockRejectedValueOnce(new Error("Sanity unavailable"))
       .mockResolvedValueOnce(30);
-    const { proxy: freshProxy } = await import("@/proxy");
+    const { blogProxy: freshProxy } = await import("@/proxy");
     const request = () =>
       freshProxy(new NextRequest("https://www.example.com/blog/2/"));
 
@@ -123,12 +125,10 @@ describe("blog post count cache", () => {
   });
 
   test("passes through the category archive route without querying Sanity", async () => {
-    const { proxy: freshProxy } = await import("@/proxy");
+    const { blogProxy: freshProxy } = await import("@/proxy");
 
     const response = await freshProxy(
-      new NextRequest(
-        "https://www.example.com/blog/category/categories/",
-      ),
+      new NextRequest("https://www.example.com/blog/category/categories/"),
     );
 
     expect(response.status).toBe(200);
@@ -141,7 +141,7 @@ describe("blog post count cache", () => {
     "/blog/category/categories/2/extra",
     "/blog/category/categories/2/3",
   ])("rejects malformed category route %s", async (pathname) => {
-    const { proxy: freshProxy } = await import("@/proxy");
+    const { blogProxy: freshProxy } = await import("@/proxy");
 
     const response = await freshProxy(
       new NextRequest(`https://www.example.com${pathname}`),
@@ -152,15 +152,11 @@ describe("blog post count cache", () => {
   });
 
   test("uses the full category count at the 12/13-post boundary", async () => {
-    fetchMock.mockResolvedValueOnce([
-      { postCount: 12, slug: "categories" },
-    ]);
-    const { proxy: freshProxy } = await import("@/proxy");
+    fetchMock.mockResolvedValueOnce([{ postCount: 12, slug: "categories" }]);
+    const { blogProxy: freshProxy } = await import("@/proxy");
     const request = () =>
       freshProxy(
-        new NextRequest(
-          "https://www.example.com/blog/category/categories/2/",
-        ),
+        new NextRequest("https://www.example.com/blog/category/categories/2/"),
       );
 
     expect((await request()).status).toBe(404);
@@ -172,12 +168,10 @@ describe("blog post count cache", () => {
       { postCount: 12, slug: "categories" },
       { postCount: 13, slug: "buyer-education" },
     ]);
-    const { proxy: freshProxy } = await import("@/proxy");
+    const { blogProxy: freshProxy } = await import("@/proxy");
 
     const serviceTypesResponse = await freshProxy(
-      new NextRequest(
-        "https://www.example.com/blog/category/categories/2/",
-      ),
+      new NextRequest("https://www.example.com/blog/category/categories/2/"),
     );
     const buyerEducationResponse = await freshProxy(
       new NextRequest(
@@ -191,20 +185,14 @@ describe("blog post count cache", () => {
   });
 
   test("passes through unknown category slugs from the cached snapshot", async () => {
-    fetchMock.mockResolvedValueOnce([
-      { postCount: 13, slug: "categories" },
-    ]);
-    const { proxy: freshProxy } = await import("@/proxy");
+    fetchMock.mockResolvedValueOnce([{ postCount: 13, slug: "categories" }]);
+    const { blogProxy: freshProxy } = await import("@/proxy");
 
     await freshProxy(
-      new NextRequest(
-        "https://www.example.com/blog/category/categories/2/",
-      ),
+      new NextRequest("https://www.example.com/blog/category/categories/2/"),
     );
     const response = await freshProxy(
-      new NextRequest(
-        "https://www.example.com/blog/category/made-up/2/",
-      ),
+      new NextRequest("https://www.example.com/blog/category/made-up/2/"),
     );
 
     expect(response.status).toBe(200);
@@ -213,13 +201,12 @@ describe("blog post count cache", () => {
 
   test("does not query Sanity for validated draft-mode category pagination", async () => {
     vi.stubEnv("__NEXT_PREVIEW_MODE_ID", "preview-id");
-    const { proxy: freshProxy } = await import("@/proxy");
+    const { blogProxy: freshProxy } = await import("@/proxy");
 
     const response = await freshProxy(
-      new NextRequest(
-        "https://www.example.com/blog/category/categories/2/",
-        { headers: { cookie: "__prerender_bypass=preview-id" } },
-      ),
+      new NextRequest("https://www.example.com/blog/category/categories/2/", {
+        headers: { cookie: "__prerender_bypass=preview-id" },
+      }),
     );
 
     expect(response.status).toBe(200);
@@ -227,20 +214,20 @@ describe("blog post count cache", () => {
   });
 
   test("shares one category snapshot request across concurrent cache misses", async () => {
-    let resolveFetch!: (value: Array<{ postCount: number; slug: string }>) => void;
+    let resolveFetch!: (
+      value: Array<{ postCount: number; slug: string }>,
+    ) => void;
     fetchMock.mockImplementationOnce(
       () =>
         new Promise<Array<{ postCount: number; slug: string }>>((resolve) => {
           resolveFetch = resolve;
         }),
     );
-    const { proxy: freshProxy } = await import("@/proxy");
+    const { blogProxy: freshProxy } = await import("@/proxy");
     const requests = ["categories", "buyer-education", "requirements"].map(
       (slug) =>
         freshProxy(
-          new NextRequest(
-            `https://www.example.com/blog/category/${slug}/2/`,
-          ),
+          new NextRequest(`https://www.example.com/blog/category/${slug}/2/`),
         ),
     );
 
@@ -252,7 +239,9 @@ describe("blog post count cache", () => {
     ]);
 
     const responses = await Promise.all(requests);
-    expect(responses.map((response) => response.status)).toEqual([200, 200, 200]);
+    expect(responses.map((response) => response.status)).toEqual([
+      200, 200, 200,
+    ]);
   });
 
   test("refreshes a stale category snapshot after the TTL", async () => {
@@ -261,12 +250,10 @@ describe("blog post count cache", () => {
     fetchMock
       .mockResolvedValueOnce([{ postCount: 12, slug: "categories" }])
       .mockResolvedValueOnce([{ postCount: 13, slug: "categories" }]);
-    const { proxy: freshProxy } = await import("@/proxy");
+    const { blogProxy: freshProxy } = await import("@/proxy");
     const request = () =>
       freshProxy(
-        new NextRequest(
-          "https://www.example.com/blog/category/categories/2/",
-        ),
+        new NextRequest("https://www.example.com/blog/category/categories/2/"),
       );
 
     expect((await request()).status).toBe(404);
@@ -281,12 +268,10 @@ describe("blog post count cache", () => {
     fetchMock
       .mockRejectedValueOnce(new Error("Sanity unavailable"))
       .mockResolvedValueOnce([{ postCount: 13, slug: "categories" }]);
-    const { proxy: freshProxy } = await import("@/proxy");
+    const { blogProxy: freshProxy } = await import("@/proxy");
     const request = () =>
       freshProxy(
-        new NextRequest(
-          "https://www.example.com/blog/category/categories/2/",
-        ),
+        new NextRequest("https://www.example.com/blog/category/categories/2/"),
       );
 
     await expect(request()).resolves.toMatchObject({ status: 200 });

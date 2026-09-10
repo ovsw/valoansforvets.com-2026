@@ -15,6 +15,9 @@
 /.next/
 /out/
 
+# Trigger.dev local worker build files
+/.trigger/
+
 # production
 /build
 
@@ -71,3 +74,6 @@ src/plugins/impeccable-live.client.ts
 !.env*.example
 !.env.template
 !.env*.template
+
+# Local database backups
+.local/

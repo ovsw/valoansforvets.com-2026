@@ -44,6 +44,13 @@ const row = defineArrayMember({
   type: "object",
   fields: [
     defineField({
+      name: "image",
+      title: "Image",
+      type: "image",
+      options: { hotspot: true },
+      fields: [defineField({ name: "alt", title: "Alt text", type: "string" })],
+    }),
+    defineField({
       name: "icon",
       title: "Icon",
       type: "object",
@@ -129,17 +136,6 @@ export default defineType({
   description:
     "An introduction followed by full-width rows with supporting points and links.",
   fields: [
-    defineField({
-      name: "useAlternateBackground",
-      title: "Use Alternate Background",
-      type: "boolean",
-      initialValue: false,
-    }),
-    defineField({
-      name: "eyebrow",
-      type: "string",
-      description: "Optional short label shown beside the heading.",
-    }),
     defineField({
       name: "title",
       title: "Heading",
