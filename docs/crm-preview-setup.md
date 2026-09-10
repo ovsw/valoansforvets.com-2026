@@ -150,7 +150,7 @@ Run this with every local server and worker stopped.
 
 1. Open the CRM URL and sign in with Google, using an address on the staff list.
 2. Choose **New test inquiry**, then **Submit test inquiry**.
-3. Choose **Refresh** until the row shows **Complete**. This takes under a minute.
+3. Watch the list. The row moves to **Complete** in under a minute without a reload.
 4. Open the row with **View**. Confirm the email is accepted, the SMS section
    shows the simulated message, and the inquiry ID is shown.
 5. Check your inbox for the test confirmation email.
