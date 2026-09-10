@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { Header } from "./site-header";
 import type { HeaderModel } from "./model";
@@ -55,10 +55,11 @@ describe("Site Header", () => {
 
     expect(screen.getByRole("banner")).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Main navigation" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Northline home page" })).toHaveAttribute("href", "/");
+    expect(screen.getAllByRole("link", { name: "Northline home page" })[0]).toHaveAttribute("href", "/");
     expect(screen.getByRole("link", { name: "Contact" })).toHaveAttribute("href", "/contact");
+    fireEvent.click(screen.getByRole("button", {name:"Services"}));
     expect(screen.getByText("Find the clearest path through a hard problem.")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Strategy" })).toHaveAttribute("href", "/strategy");
+    expect(screen.getByRole("link", { name: /Strategy/ })).toHaveAttribute("href", "/strategy");
 
     const action = screen.getByRole("link", { name: "Start a project" });
     expect(action).toHaveAttribute("href", "https://example.com/book");

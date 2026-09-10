@@ -1,3 +1,5 @@
+import { Pagination,PaginationContent,PaginationItem,PaginationEllipsis } from "@/components/ui/pagination";
+import { buttonVariants } from "@/components/ui/button";
 import {
   generateBlogPaginationItems,
   getBlogPaginationUrl,
@@ -19,35 +21,37 @@ export default function BlogPagination({
   );
 
   return (
-    <nav aria-label="Pagination">
+    <Pagination className="mt-10" aria-label="Pagination"><PaginationContent className="flex-wrap">
+      <PaginationItem>
       {pagination.hasPreviousPage ? (
-        <Link href={getBlogPaginationUrl(pagination.currentPage - 1, basePath)}>
+        <Link className={buttonVariants({variant:"ghost"})} href={getBlogPaginationUrl(pagination.currentPage - 1, basePath)}>
           {"\u2190"} Previous
         </Link>
       ) : (
-        <span aria-disabled="true">{"\u2190"} Previous</span>
+        <span className="inline-flex h-9 items-center px-4 text-sm text-muted-foreground" aria-disabled="true">{"\u2190"} Previous</span>
       )}
-      {items.map((item, index) =>
+      </PaginationItem>{items.map((item, index) =>
         item === "ellipsis" ? (
-          <span aria-hidden="true" key={`ellipsis-${index}`}>...</span>
+          <PaginationItem key={`ellipsis-${index}`}><PaginationEllipsis /></PaginationItem>
         ) : (
-          <Link
+          <PaginationItem key={item}><Link
+            className={buttonVariants({variant:item === pagination.currentPage ? "outline" : "ghost",size:"icon"})}
             aria-current={item === pagination.currentPage ? "page" : undefined}
             aria-label={`Go to page ${item}`}
             href={getBlogPaginationUrl(item, basePath)}
             key={item}
           >
             {item}
-          </Link>
+          </Link></PaginationItem>
         ),
       )}
-      {pagination.hasNextPage ? (
-        <Link href={getBlogPaginationUrl(pagination.currentPage + 1, basePath)}>
+      <PaginationItem>{pagination.hasNextPage ? (
+        <Link className={buttonVariants({variant:"ghost"})} href={getBlogPaginationUrl(pagination.currentPage + 1, basePath)}>
           Next {"\u2192"}
         </Link>
       ) : (
-        <span aria-disabled="true">Next {"\u2192"}</span>
+        <span className="inline-flex h-9 items-center px-4 text-sm text-muted-foreground" aria-disabled="true">Next {"\u2192"}</span>
       )}
-    </nav>
+    </PaginationItem></PaginationContent></Pagination>
   );
 }

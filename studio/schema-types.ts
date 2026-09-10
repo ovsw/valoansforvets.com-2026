@@ -36,7 +36,6 @@ import {
 } from "./schemas/blocks/shared/blog-post-sidebar";
 // Schema UI objects
 import hero from "./schemas/blocks/hero";
-import hero1 from "./schemas/blocks/hero/hero-1";
 import latestArticles from "./schemas/blocks/latest-articles";
 import faqAccordion from "./schemas/blocks/faq-accordion";
 import storyFeature from "./schemas/blocks/story-feature";
@@ -84,7 +83,6 @@ export const schemaTypes = [
   blogPostSidebar,
   // blocks
   hero,
-  hero1,
   latestArticles,
   faqAccordion,
   storyFeature,

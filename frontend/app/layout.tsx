@@ -1,3 +1,5 @@
+import "./globals.css";
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { siteUrl } from "@/lib/site-url";
 import { siteName } from "@/lib/site-name";
@@ -34,8 +36,10 @@ export default function RootLayout({
     <html lang="en">
       <link rel="icon" href="/favicon.ico" />
       <body>
-        {children}
-        <Toaster position="top-center" richColors />
+        <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up">
+          {children}
+          <Toaster position="top-center" richColors />
+        </ClerkProvider>
       </body>
     </html>
   );

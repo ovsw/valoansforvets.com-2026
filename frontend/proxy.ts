@@ -1,3 +1,5 @@
+import { clerkMiddleware } from "@clerk/nextjs/server";
+import type { NextFetchEvent } from "next/server";
 import {
   calculateBlogPagination,
   isBlogPageOutOfRange,
@@ -13,19 +15,14 @@ import { NextRequest, NextResponse } from "next/server";
 
 const BLOG_POST_COUNT_TTL_MS = 60_000;
 
-let blogPostCountCache:
-  | { expiresAt: number; value: number }
-  | undefined;
+let blogPostCountCache: { expiresAt: number; value: number } | undefined;
 let blogPostCountPromise: Promise<number> | undefined;
 
 type CategoryPostCount = { postCount: number; slug: string };
 
 let categoryPostCountsCache:
-  | { expiresAt: number; value: ReadonlyMap<string, number> }
-  | undefined;
-let categoryPostCountsPromise:
-  | Promise<ReadonlyMap<string, number>>
-  | undefined;
+  { expiresAt: number; value: ReadonlyMap<string, number> } | undefined;
+let categoryPostCountsPromise: Promise<ReadonlyMap<string, number>> | undefined;
 
 function getBlogPostCount() {
   if (blogPostCountCache && blogPostCountCache.expiresAt > Date.now()) {
@@ -34,7 +31,9 @@ function getBlogPostCount() {
 
   if (!blogPostCountPromise) {
     blogPostCountPromise = client
-      .fetch<ELIGIBLE_BLOG_POSTS_COUNT_QUERY_RESULT>(ELIGIBLE_BLOG_POSTS_COUNT_QUERY)
+      .fetch<ELIGIBLE_BLOG_POSTS_COUNT_QUERY_RESULT>(
+        ELIGIBLE_BLOG_POSTS_COUNT_QUERY,
+      )
       .then((value) => {
         blogPostCountCache = {
           expiresAt: Date.now() + BLOG_POST_COUNT_TTL_MS,
@@ -99,14 +98,14 @@ function hasValidatedDraftMode(request: NextRequest) {
   const previewModeId = process.env.__NEXT_PREVIEW_MODE_ID;
   return Boolean(
     cookieValue &&
-      previewModeId &&
-      (cookieValue === previewModeId ||
-        (process.env.NODE_ENV !== "production" &&
-          previewModeId === "development-id")),
+    previewModeId &&
+    (cookieValue === previewModeId ||
+      (process.env.NODE_ENV !== "production" &&
+        previewModeId === "development-id")),
   );
 }
 
-export async function proxy(request: NextRequest) {
+export async function blogProxy(request: NextRequest) {
   if (!request.nextUrl.pathname.startsWith("/blog/")) {
     return NextResponse.next();
   }
@@ -135,9 +134,7 @@ export async function proxy(request: NextRequest) {
 
   const page = parseBlogPageSegment(segments[1]);
   if (!page) {
-    return /^\d+$/.test(segments[1])
-      ? notFoundResponse()
-      : NextResponse.next();
+    return /^\d+$/.test(segments[1]) ? notFoundResponse() : NextResponse.next();
   }
 
   if (hasValidatedDraftMode(request)) return NextResponse.next();
@@ -155,6 +152,21 @@ export async function proxy(request: NextRequest) {
     : NextResponse.next();
 }
 
+const clerkProxy = clerkMiddleware();
+
+export async function proxy(request: NextRequest, event: NextFetchEvent) {
+  if (/^\/(crm|sign-in|sign-up|__clerk)(\/|$)/.test(request.nextUrl.pathname)) {
+    return clerkProxy(request, event);
+  }
+  return blogProxy(request);
+}
+
 export const config = {
-  matcher: ["/((?!_next|api|.*\\..*).*)"],
+  matcher: [
+    "/crm/:path*",
+    "/sign-in/:path*",
+    "/sign-up/:path*",
+    "/__clerk/:path*",
+    "/((?!_next|api|.*\\..*).*)",
+  ],
 };

@@ -84,9 +84,10 @@ test("listing cards expose every visible post field to Presentation", () => {
     assert.match(cardSource, new RegExp(`dataAttribute\\?\\.\\("${path}"\\)`));
   }
   assert.match(cardSource, /categoryDataAttribute\?\.\("title"\)/);
-  assert.match(cardSource, /<Link href=\{postHref\}>\{post\.title\}<\/Link>/);
+  assert.match(cardSource, /href=\{postHref\}/);
+  assert.match(cardSource, /title=\{post\.title\}/);
   assert.match(querySource, /category->\{_id, title, slug\}/);
-  assert.match(cardSource, /stegaClean\(categoryReference\?\.slug\?\.current\)/);
+  assert.match(cardSource, /stegaClean\(category\?\.slug\?\.current\)/);
 
   const latestArticlesSource = readFileSync(
     new URL("../components/blocks/latest-articles.tsx", import.meta.url),
@@ -99,7 +100,7 @@ test("listing cards expose every visible post field to Presentation", () => {
   assert.match(latestArticlesSource, /stegaClean\(slug\)/);
   assert.match(latestArticlesSource, /postPath\(cleanSlug\)/);
   assert.match(latestArticlesSource, /categoryPath\(cleanSlug\)/);
-  assert.match(articleCardSource, /return \(\s*<article/);
+  assert.match(articleCardSource, /return \(\s*<PostCard/);
   assert.doesNotMatch(articleCardSource, /return \(\s*<Link\s/);
 });
 

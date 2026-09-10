@@ -119,12 +119,11 @@ describe("RootContentView", () => {
       />,
     );
 
-    const layout = container.querySelector('[data-post-layout="two-column"]');
+    const layout = container.querySelector('[data-post-layout="single-column"]');
     expect(screen.queryByRole("navigation", { name: "Table of Contents" })).not.toBeInTheDocument();
-    expect(layout?.querySelector("article")?.nextElementSibling).toHaveAttribute(
-      "aria-label",
-      "Post actions",
-    );
+    const article = layout?.querySelector("article");
+    const actions = screen.getByRole("complementary", {name:"Post actions"});
+    expect((article?.compareDocumentPosition(actions) ?? 0) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("shows the table of contents for a heading-rich post", () => {

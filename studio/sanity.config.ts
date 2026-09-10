@@ -1,3 +1,4 @@
+import { vercelProtectionBypassTool } from "@sanity/vercel-protection-bypass";
 import { visionTool } from "@sanity/vision";
 import { defineConfig } from "sanity";
 import { structureTool } from "sanity/structure";
@@ -9,10 +10,7 @@ import { resolve } from "./presentation/resolve";
 import { openInPresentationAction } from "./presentation/open-in-presentation";
 import { isPresentationDocumentType } from "./presentation/routes";
 import { structure } from "./structure";
-import {
-  singletonDocumentActions,
-  singletonDocumentTypes,
-} from "./singletons";
+import { singletonDocumentActions, singletonDocumentTypes } from "./singletons";
 
 // Define the actions that should be available for singleton documents
 const nonCreatableTypes = singletonDocumentTypes;
@@ -52,8 +50,8 @@ export default defineConfig({
     // in the `singletonActions` list defined above
     actions: (input, context) =>
       singletonDocumentTypes.has(context.schemaType)
-        ? input.filter(({ action }) =>
-            action && singletonDocumentActions.has(action),
+        ? input.filter(
+            ({ action }) => action && singletonDocumentActions.has(action),
           )
         : input,
     unstable_fieldActions: (input, context) =>
@@ -72,6 +70,7 @@ export default defineConfig({
       },
       resolve,
     }),
+    vercelProtectionBypassTool(),
     // Vision is a tool that lets you query your content with GROQ in the studio
     // https://www.sanity.io/docs/the-vision-plugin
     visionTool({ defaultApiVersion: apiVersion }),

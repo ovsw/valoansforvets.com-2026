@@ -10,18 +10,6 @@ export default defineType({
     "Quotes from selected Testimonial documents. Three cards on desktop, one card wide with swipe on phones.",
   fields: [
     defineField({
-      name: "useAlternateBackground",
-      title: "Use Alternate Background",
-      type: "boolean",
-      initialValue: false,
-    }),
-    defineField({
-      name: "eyebrow",
-      title: "Eyebrow",
-      type: "string",
-      description: "Short label shown above the heading.",
-    }),
-    defineField({
       name: "title",
       title: "Heading",
       type: "string",

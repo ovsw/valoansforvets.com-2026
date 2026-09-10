@@ -154,11 +154,11 @@ describe("PostSidebar", () => {
     expect(internal).not.toHaveAttribute("target");
   });
 
-  it("shows a native open table of contents for three headings", () => {
+  it("shows an expanded reading index for three headings", () => {
     const bodyModel = createPostBodyModel(threeHeadings);
     render(<PostTableOfContentsRail headings={bodyModel.headings} />);
 
-    expect(screen.getByText("Table of contents").closest("details")).toHaveAttribute("open");
+    expect(screen.getByRole("button", {name:"Table of contents"})).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("navigation", { name: "Table of Contents" })).toBeInTheDocument();
   });
 

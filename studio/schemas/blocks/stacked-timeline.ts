@@ -71,17 +71,6 @@ export default defineType({
     "An introduction with up to two actions beside numbered cards, in order. Everything stacks on phones.",
   fields: [
     defineField({
-      name: "useAlternateBackground",
-      title: "Use Alternate Background",
-      type: "boolean",
-      initialValue: false,
-    }),
-    defineField({
-      name: "eyebrow",
-      type: "string",
-      description: "Optional short label shown above the heading.",
-    }),
-    defineField({
       name: "title",
       title: "Heading",
       type: "string",

@@ -14,7 +14,8 @@
     "generate:lucide-icons": "node scripts/generate-lucide-icon-catalog.mjs",
     "test:presentation": "node --test presentation/presentation.test.mjs",
     "typegen": "rm -f schema.json && sanity schema extract; test -f schema.json && sanity typegen generate",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "deploy:hosted": "SANITY_STUDIO_PREVIEW_URL=https://valoansforvets-com-2026-preview.vercel.app sanity deploy --url valoansforvets-com-2026"
   },
   "dependencies": {
     "@portabletext/react": "^6.2.0",
@@ -24,6 +25,7 @@
     "@sanity/preview-url-secret": "^4.0.8",
     "@sanity/table": "3.1.12",
     "@sanity/ui": "^3.3.5",
+    "@sanity/vercel-protection-bypass": "^5.0.23",
     "@sanity/vision": "^6.4.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
