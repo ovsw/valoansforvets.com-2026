@@ -51,7 +51,7 @@ export async function submitTestInquiry(id: string) {
     // Do not overwrite a completion if the worker finishes before this update.
     await db
       .update(testInquiries)
-      .set({ runId: run.id })
+      .set({ runId: run.id, updatedAt: new Date() })
       .where(eq(testInquiries.id, id));
   } catch (error) {
     console.error("Trigger.dev dispatch failed for inquiry", id, error);

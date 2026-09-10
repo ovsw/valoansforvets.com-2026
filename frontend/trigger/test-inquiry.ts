@@ -51,7 +51,7 @@ export const testInquiry = schemaTask({
           .parse(await response.json());
         await db
           .update(testInquiries)
-          .set({ emailId: result.id })
+          .set({ emailId: result.id, updatedAt: new Date() })
           .where(eq(testInquiries.id, inquiryId));
       }
       // The primary key keeps one simulated text per inquiry across retries.
@@ -65,7 +65,12 @@ export const testInquiry = schemaTask({
         .onConflictDoNothing();
       await db
         .update(testInquiries)
-        .set({ smsStatus: "simulated", jobStatus: "complete", lastError: null })
+        .set({
+          smsStatus: "simulated",
+          jobStatus: "complete",
+          lastError: null,
+          updatedAt: new Date(),
+        })
         .where(eq(testInquiries.id, inquiryId));
       return { inquiryId, email: "accepted", sms: "simulated" };
     } catch (error) {
@@ -74,6 +79,7 @@ export const testInquiry = schemaTask({
         .set({
           jobStatus: "failed",
           lastError: error instanceof Error ? error.message : "Unknown error.",
+          updatedAt: new Date(),
         })
         .where(eq(testInquiries.id, inquiryId));
       throw new Error(

@@ -53,7 +53,10 @@ it("uses one global dispatch key for concurrent submissions of an inquiry", asyn
     { inquiryId: "inquiry" },
     { idempotencyKey: "test-inquiry:inquiry" },
   );
-  expect(mocks.update).toHaveBeenCalledWith({ runId: "run" });
+  expect(mocks.update).toHaveBeenCalledWith({
+    runId: "run",
+    updatedAt: expect.any(Date),
+  });
 });
 
 it("stops before database access when staff authorization fails", async () => {

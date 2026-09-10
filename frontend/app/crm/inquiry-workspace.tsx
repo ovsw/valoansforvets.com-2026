@@ -34,6 +34,7 @@ export type InquiryRow = {
   emailId: string | null;
   smsStatus: string;
   lastError: string | null;
+  updatedAt: string;
   sms: { recipient: string; message: string; simulatedAt: string } | null;
 };
 
@@ -217,8 +218,11 @@ export function InquiryWorkspace({
         <div className="flex flex-wrap gap-2">
           <RefreshButton
             pendingSince={
-              inquiries.find((row) => row.jobStatus === "pending")?.createdAt ??
-              null
+              inquiries
+                .filter((row) => row.jobStatus === "pending")
+                .map((row) => row.updatedAt)
+                .sort()
+                .at(-1) ?? null
             }
           />
           <Sheet>

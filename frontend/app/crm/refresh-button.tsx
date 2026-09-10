@@ -6,8 +6,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useTransition } from "react";
 
 // Polls while a job is still running, so staff see status change without
-// reloading. Polling stops 15 minutes after the newest pending inquiry was
-// created, so a stuck record does not poll forever.
+// reloading. Polling stops 15 minutes after the last write to any pending
+// inquiry, so a stuck record does not poll forever. A retry writes the row,
+// which starts polling again.
 export function RefreshButton({
   pendingSince,
 }: {

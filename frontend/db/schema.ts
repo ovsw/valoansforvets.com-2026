@@ -12,6 +12,10 @@ export const testInquiries = pgTable("crm_test_inquiries", {
   jobStatus: text("job_status").notNull().default("pending"),
   runId: text("run_id"),
   lastError: text("last_error"),
+  // Bumped on every write. The CRM polls while a pending row is recent.
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
 });
 
 // One simulated text per inquiry. Nothing here reaches a messaging provider.

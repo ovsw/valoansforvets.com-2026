@@ -52,6 +52,7 @@ async function CrmContent() {
             emailId,
             smsStatus,
             lastError,
+            updatedAt,
             sms,
           }) => ({
             id,
@@ -61,6 +62,7 @@ async function CrmContent() {
             emailId,
             smsStatus,
             lastError,
+            updatedAt: updatedAt.toISOString(),
             sms: sms && {
               recipient: sms.recipient,
               message: sms.message,
