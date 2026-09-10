@@ -6,7 +6,10 @@ import { hostname } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 
-export const HOST = "127.0.0.1";
+// Listen on every interface, like plain "next dev". A loopback-only bind
+// (127.0.0.1) breaks Next's own proxy hop to "localhost" on IPv6 machines,
+// and shuts out LAN devices and local forwarders such as Tailscale.
+export const HOST = "0.0.0.0";
 export const SLOT_COUNT = 10;
 export const FRONTEND_BASE_PORT = 3000;
 export const STUDIO_BASE_PORT = 3333;
