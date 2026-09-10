@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { submitTestInquiry } from "@/lib/crm/inquiries";
+import { deleteTestInquiries, submitTestInquiry } from "@/lib/crm/inquiries";
 
 export async function createTestInquiry(_previous: string, formData: FormData) {
   const parsed = z.uuid().safeParse(formData.get("inquiryId"));
@@ -15,4 +15,21 @@ export async function createTestInquiry(_previous: string, formData: FormData) {
   }
   revalidatePath("/crm");
   return "Test inquiry saved. The status updates here as the job runs.";
+}
+
+export async function deleteInquiries(_previous: string, formData: FormData) {
+  const parsed = z
+    .array(z.uuid())
+    .min(1)
+    .safeParse(formData.getAll("inquiryId"));
+  if (!parsed.success) return "Select at least one inquiry to delete.";
+  let count: number;
+  try {
+    count = await deleteTestInquiries(parsed.data);
+  } catch (error) {
+    console.error("Delete inquiries action failed", error);
+    return "The inquiries could not be deleted. Refresh and try again.";
+  }
+  revalidatePath("/crm");
+  return count === 1 ? "1 inquiry deleted." : `${count} inquiries deleted.`;
 }
