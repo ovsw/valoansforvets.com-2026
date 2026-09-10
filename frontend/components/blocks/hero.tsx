@@ -72,7 +72,7 @@ export default function Hero({
                     <Button
                   size="lg"
                       asChild
-                      variant={index === 0 ? "primary" : "outline"}
+                      variant={index === 0 ? "default" : "outline"}
                       key={button._key}
                     >
                       <Link

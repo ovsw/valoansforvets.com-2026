@@ -75,7 +75,7 @@ function InquiryDetails({ inquiry }: { inquiry: InquiryRow }) {
       <SheetTrigger asChild>
         <Button
           variant="ghost"
-          size="compact"
+          size="sm"
           aria-label={`View inquiry ${inquiry.id}`}
         >
           View <ArrowUpRight />

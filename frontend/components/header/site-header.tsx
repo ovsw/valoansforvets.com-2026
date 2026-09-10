@@ -89,7 +89,7 @@ export function HeaderNavigation({
       </NavigationMenu>
       <div className="flex gap-2">
         {navigation.actions.map((action) => (
-          <Button asChild size="compact" key={action.key}>
+          <Button asChild size="sm" key={action.key}>
             <HeaderLink link={action.link} />
           </Button>
         ))}
