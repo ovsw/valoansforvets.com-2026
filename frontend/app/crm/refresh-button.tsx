@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useTransition } from "react";
 
 // Polls while a job is still running, so staff see status change without
 // reloading. Polling stops 15 minutes after the newest pending inquiry was
@@ -15,13 +15,12 @@ export function RefreshButton({
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [live, setLive] = useState(false);
   useEffect(() => {
-    const recent =
-      pendingSince !== null &&
-      Date.now() - new Date(pendingSince).getTime() < 15 * 60000;
-    setLive(recent);
-    if (!recent) return;
+    if (
+      pendingSince === null ||
+      Date.now() - new Date(pendingSince).getTime() >= 15 * 60000
+    )
+      return;
     const timer = setInterval(
       () => startTransition(() => router.refresh()),
       4000,
@@ -38,7 +37,7 @@ export function RefreshButton({
       <RefreshCw
         className={pending ? "animate-spin motion-reduce:animate-none" : ""}
       />
-      {pending ? "Refreshing…" : live ? "Checking for updates…" : "Refresh results"}
+      {pending ? "Refreshing…" : "Refresh results"}
     </Button>
   );
 }
