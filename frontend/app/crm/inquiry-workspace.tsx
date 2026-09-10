@@ -176,6 +176,7 @@ function InquiryDetails({ inquiry }: { inquiry: InquiryRow }) {
 }
 
 // Adapted from licensed Shadcnblocks stats-card1 and data-table1.
+// Polling stops after 15 minutes so a stuck record does not poll forever.
 // The bounded list uses native table sorting and the existing inquiry actions.
 export function InquiryWorkspace({
   inquiries,
@@ -216,7 +217,11 @@ export function InquiryWorkspace({
         </div>
         <div className="flex flex-wrap gap-2">
           <RefreshButton
-            live={inquiries.some((row) => row.jobStatus === "pending")}
+            live={inquiries.some(
+              (row) =>
+                row.jobStatus === "pending" &&
+                Date.now() - new Date(row.createdAt).getTime() < 15 * 60000,
+            )}
           />
           <Sheet>
             <SheetTrigger asChild>
