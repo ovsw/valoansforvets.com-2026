@@ -193,10 +193,6 @@ export function InquiryWorkspace({
   const [status, setStatus] = useState("all");
   const [oldestFirst, setOldestFirst] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  // Rows deleted elsewhere drop out of the selection on the next render.
-  const selected = selectedIds.filter((id) =>
-    inquiries.some((row) => row.id === id),
-  );
   const visible = inquiries.filter(
     (row) =>
       (status === "all" || row.jobStatus === status) &&
@@ -205,6 +201,11 @@ export function InquiryWorkspace({
         .includes(search.toLowerCase()),
   );
   if (oldestFirst) visible.reverse();
+  // Only rows the user can see count as selected. A row hidden by a filter,
+  // or deleted elsewhere, drops out on the next render and cannot be deleted.
+  const selected = selectedIds.filter((id) =>
+    visible.some((row) => row.id === id),
+  );
   const allVisibleSelected =
     visible.length > 0 && visible.every((row) => selected.includes(row.id));
   const toggleVisible = () =>
