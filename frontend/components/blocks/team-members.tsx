@@ -24,20 +24,21 @@ export default function TeamMembers({
     m.document ? [{ key: m._key, person: m.document }] : [],
   );
   if (!people.length) return null;
+  const headingId = stegaClean(title)?.trim()
+    ? `team-members-${stegaClean(_key)}-title`
+    : undefined;
   return (
-    <section
-      className="py-32"
-      id="team"
-      aria-labelledby={`team-members-${stegaClean(_key)}-title`}
-    >
+    <section className="py-32" id="team" aria-labelledby={headingId}>
       <div className="container flex flex-col items-center text-center">
-        <h2
-          className="my-6 text-2xl font-bold text-pretty lg:text-4xl"
-          id={`team-members-${stegaClean(_key)}-title`}
-          data-sanity={dataAttribute?.("title")}
-        >
-          {title}
-        </h2>
+        {headingId && (
+          <h2
+            className="my-6 text-2xl font-bold text-pretty lg:text-4xl"
+            id={headingId}
+            data-sanity={dataAttribute?.("title")}
+          >
+            {title}
+          </h2>
+        )}
         {richText?.length ? (
           <div
             className="mb-8 max-w-3xl text-muted-foreground lg:text-xl"

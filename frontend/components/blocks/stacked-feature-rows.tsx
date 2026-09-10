@@ -21,7 +21,7 @@ export default function StackedFeatureRows({
   rows,
   dataAttribute,
 }: Props) {
-  if (!rows?.length) return null;
+  if (!rows?.length || !stegaClean(title)?.trim()) return null;
   return (
     <FeatureGrid
       title={title}

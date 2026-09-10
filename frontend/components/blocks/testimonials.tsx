@@ -85,7 +85,8 @@ export default function Testimonials({
                         "title",
                       )}
                     >
-                      , {person.title}
+                      {stegaClean(person.name)?.trim() ? ", " : ""}
+                      {person.title}
                     </span>
                   )}
                 </p>

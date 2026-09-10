@@ -202,7 +202,7 @@ An ordered series of messages that delivers Nurture to veterans in one Audience 
 One scheduled message or action within a Nurture Sequence.
 
 **Consent Record**:
-Evidence of what communication a person agreed to receive, including the exact promise, channel, timestamp, and form source.
+Evidence of what communication a person agreed to receive, including the exact promise, sender brand, channel, timestamp, and form source. A Nurture Sequence is limited to the sender brands and channels covered by that consent; attribution or routing through another brand does not expand it.
 
 **Unsubscribe**:
 A person's request to stop all marketing email and SMS from both VALoansForVets.com and PHXHomeLoan.com, because the same team sends for both. It ends active Nurture Sequences but does not stop messages for a Consultation the person requested. Confirmed by the project owner, 2026-09-08.

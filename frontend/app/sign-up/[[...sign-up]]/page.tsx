@@ -10,7 +10,7 @@ export default function SignUpPage() {
         <Link href="/" className="text-xl font-semibold tracking-tight">
           VA Loans for Vets
         </Link>
-        <Suspense fallback={<p>Loading sign-in…</p>}>
+        <Suspense fallback={<p>Loading sign-up…</p>}>
           <SignUp
             appearance={{
               elements: {

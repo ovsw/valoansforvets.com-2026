@@ -1,5 +1,5 @@
 import "server-only";
-import { tasks } from "@trigger.dev/sdk";
+import { tasks, idempotencyKeys } from "@trigger.dev/sdk";
 import { desc, eq } from "drizzle-orm";
 import { database } from "@/db/client";
 import { testInquiries } from "@/db/schema";
@@ -31,9 +31,16 @@ export async function submitTestInquiry(id: string) {
     throw new Error("Test inquiry is not available.");
   if (row.jobStatus === "complete") return;
   try {
-    const run = await tasks.trigger<typeof testInquiry>("test-inquiry", {
-      inquiryId: id,
+    const idempotencyKey = await idempotencyKeys.create(`test-inquiry:${id}`, {
+      scope: "global",
     });
+    const run = await tasks.trigger<typeof testInquiry>(
+      "test-inquiry",
+      {
+        inquiryId: id,
+      },
+      { idempotencyKey },
+    );
     // Do not overwrite a completion if the worker finishes before this update.
     await db
       .update(testInquiries)

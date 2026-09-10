@@ -29,7 +29,9 @@ Do not print, commit, replace, or copy these secrets into Studio.
 there is no delivery webhook yet. SMS never contacts a provider.
 
 A failed dispatch leaves the saved record available for retry. Retrying uses
-that record ID. Completed jobs skip sending. Resend also receives a stable
+that record ID. A global Trigger.dev idempotency key deduplicates concurrent
+dispatches for the same inquiry. Trigger.dev clears the key after a failed run,
+so a later retry can create a new run. Completed jobs skip sending. Resend also receives a stable
 idempotency key. Email retries stop after 23 hours to stay inside Resend's
 24-hour idempotency window. For an older incomplete record, inspect Resend
 before deciding whether to create a new test. The task queue runs one job at

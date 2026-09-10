@@ -186,3 +186,33 @@ describe("core Page Builder sections", () => {
     expect(screen.getByText("Founder")).toBeInTheDocument();
   });
 });
+
+it("keeps authored images in hero body content", () => {
+  const hero = {
+    _key: "hero-image",
+    _type: "hero",
+    title: "A useful introduction",
+    body: [
+      {
+        _key: "inline-image",
+        _type: "image",
+        alt: "A home exterior",
+        asset: {
+          url: "https://cdn.sanity.io/images/project/production/example-800x600.png",
+          metadata: {
+            dimensions: { width: 800, height: 600 },
+            lqip: "data:image/png;base64,AAAA",
+          },
+        },
+      },
+    ],
+  } as unknown as ComponentProps<typeof Hero>;
+  render(<Hero {...hero} />);
+  const image = screen.getByRole("img", { name: "A home exterior" });
+  expect(image).toHaveAttribute("width", "800");
+  expect(image).toHaveAttribute("height", "600");
+  expect(image).toHaveAttribute(
+    "src",
+    expect.stringContaining("example-800x600.png"),
+  );
+});

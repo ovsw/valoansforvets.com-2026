@@ -6,8 +6,6 @@ import { simpleRichTextQuery } from "./shared/simple-rich-text";
 // @sanity-typegen-ignore
 export const stackedFeatureRowsQuery = groq`
   _type == "stackedFeatureRows" => {
-    useAlternateBackground,
-    eyebrow,
     title,
     "rows": array::compact(rows[]{
       image { ${imageQuery} },

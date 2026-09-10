@@ -57,7 +57,7 @@ export default function CtaBanner({
               >
                 {buttons.slice(0, 2).map((button) => {
                   const href = getSafeLinkHref(button.href);
-                  if (!href) return null;
+                  if (!href || !stegaClean(button.text)?.trim()) return null;
                   return (
                     <Link
                       className={buttonVariants()}

@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { closeSync, mkdirSync, openSync } from "node:fs";
+import { closeSync, mkdirSync, openSync, unlinkSync } from "node:fs";
 import { previewDatabaseUrl } from "../lib/crm/policy";
 
 const url = new URL(previewDatabaseUrl());
@@ -23,9 +23,13 @@ const result = spawnSync(
   },
 );
 closeSync(fd);
-if (result.status !== 0)
+if (result.status !== 0) {
+  unlinkSync(path);
   throw new Error("Backup failed. Do not use the output file.");
+}
 const check = spawnSync("pg_restore", ["--list", path], { encoding: "utf8" });
-if (check.status !== 0 || !check.stdout.includes("crm_test_inquiries"))
+if (check.status !== 0 || !check.stdout.includes("crm_test_inquiries")) {
+  unlinkSync(path);
   throw new Error("Backup archive validation failed.");
+}
 console.log(`Backup saved and archive checked: ${path}`);

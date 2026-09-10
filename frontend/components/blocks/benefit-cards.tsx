@@ -19,7 +19,7 @@ export default function BenefitCards({
   cards,
   dataAttribute,
 }: Props) {
-  if (!cards?.length) return null;
+  if (!cards?.length || !stegaClean(title)?.trim()) return null;
   return (
     <FeatureGrid
       title={title}
