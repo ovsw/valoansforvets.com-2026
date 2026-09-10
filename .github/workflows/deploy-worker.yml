@@ -1,0 +1,55 @@
+name: Deploy worker
+
+# Keeps the hosted Trigger.dev worker and the test database in step with main,
+# so the CRM test flow never depends on a developer's computer.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/trigger/**"
+      - "frontend/trigger.config.ts"
+      - "frontend/db/**"
+      - "frontend/drizzle/**"
+      - "frontend/lib/crm/policy.ts"
+      - "frontend/scripts/migrate-preview.ts"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/deploy-worker.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-worker
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-worker:
+    name: Migrate test database and deploy worker
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2
+        with:
+          runtime: node@24
+          cache: true
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Migrate the test database
+        run: pnpm --dir frontend exec node --import tsx scripts/migrate-preview.ts
+        env:
+          PREVIEW_DATABASE_URL: ${{ secrets.PREVIEW_DATABASE_URL }}
+
+      - name: Deploy the worker to Trigger.dev prod
+        run: pnpm --dir frontend exec trigger deploy --env prod
+        env:
+          TRIGGER_ACCESS_TOKEN: ${{ secrets.TRIGGER_ACCESS_TOKEN }}

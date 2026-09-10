@@ -1,6 +1,9 @@
 import { schemaTask } from "@trigger.dev/sdk";
 import { z } from "zod";
 
+export const SMS_MESSAGE =
+  "VA Loans for Vets: We received your consultation request. Jimmy will contact you shortly.";
+
 // Fixed test data only. This task never contacts a messaging provider.
 export const simulateSms = schemaTask({
   id: "simulate-sms",
@@ -9,8 +12,7 @@ export const simulateSms = schemaTask({
     status: "simulated" as const,
     channel: "sms" as const,
     recipient: "Test recipient (no phone number)",
-    message:
-      "VA Loans for Vets: We received your consultation request. Jimmy will contact you shortly.",
+    message: SMS_MESSAGE,
     sent: false,
     simulatedAt: new Date().toISOString(),
   }),

@@ -3,7 +3,7 @@ import {
   canRetryEmail,
   isStaffEmail,
   previewDatabaseUrl,
-  testRecipient,
+  isTestRecipient,
 } from "./policy";
 
 afterEach(() => vi.unstubAllEnvs());
@@ -30,16 +30,11 @@ describe("CRM trust boundaries", () => {
     );
     expect(previewDatabaseUrl).toThrow();
   });
-  it("prevents redirecting test email to an arbitrary address", () => {
-    vi.stubEnv("TEST_EMAIL_ALLOWLIST", "borrower@example.com");
-    expect(testRecipient).toThrow();
-    vi.stubEnv(
-      "TEST_EMAIL_ALLOWLIST",
-      "ovi@ovswebsites.com,borrower@example.com",
-    );
-    expect(testRecipient).toThrow();
-    vi.stubEnv("TEST_EMAIL_ALLOWLIST", "ovi@ovswebsites.com");
-    expect(testRecipient()).toBe("ovi@ovswebsites.com");
+  it("sends test email only to listed staff addresses", () => {
+    const list = "ovi@ovswebsites.com, jamesvercellino@gmail.com";
+    expect(isTestRecipient("borrower@example.com", list)).toBe(false);
+    expect(isTestRecipient("JamesVercellino@gmail.com", list)).toBe(true);
+    expect(isTestRecipient("ovi@ovswebsites.com", "")).toBe(false);
   });
   it("stops retries before provider idempotency expires", () => {
     const start = new Date("2026-09-10T00:00:00Z");

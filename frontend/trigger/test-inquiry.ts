@@ -2,8 +2,9 @@ import { schemaTask } from "@trigger.dev/sdk";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { database } from "../db/client";
-import { testInquiries } from "../db/schema";
-import { canRetryEmail, testRecipient } from "../lib/crm/policy";
+import { simulatedSms, testInquiries } from "../db/schema";
+import { canRetryEmail, isTestRecipient } from "../lib/crm/policy";
+import { SMS_MESSAGE } from "./simulate-sms";
 
 export const testInquiry = schemaTask({
   id: "test-inquiry",
@@ -17,8 +18,8 @@ export const testInquiry = schemaTask({
       .where(eq(testInquiries.id, inquiryId));
     if (!inquiry) throw new Error("Test inquiry not found.");
     try {
-      if (inquiry.recipient !== testRecipient())
-        throw new Error("Recipient is not allowed.");
+      if (!isTestRecipient(inquiry.recipient))
+        throw new Error("Recipient is not on the test email list.");
       if (!inquiry.emailId) {
         if (process.env.PREVIEW_EMAIL_ENABLED !== "true")
           throw new Error("Preview email is disabled.");
@@ -53,15 +54,27 @@ export const testInquiry = schemaTask({
           .set({ emailId: result.id })
           .where(eq(testInquiries.id, inquiryId));
       }
+      // The primary key keeps one simulated text per inquiry across retries.
+      await db
+        .insert(simulatedSms)
+        .values({
+          inquiryId,
+          recipient: "Test recipient (no phone number)",
+          message: SMS_MESSAGE,
+        })
+        .onConflictDoNothing();
       await db
         .update(testInquiries)
-        .set({ smsStatus: "simulated", jobStatus: "complete" })
+        .set({ smsStatus: "simulated", jobStatus: "complete", lastError: null })
         .where(eq(testInquiries.id, inquiryId));
       return { inquiryId, email: "accepted", sms: "simulated" };
-    } catch {
+    } catch (error) {
       await db
         .update(testInquiries)
-        .set({ jobStatus: "failed" })
+        .set({
+          jobStatus: "failed",
+          lastError: error instanceof Error ? error.message : "Unknown error.",
+        })
         .where(eq(testInquiries.id, inquiryId));
       throw new Error(
         "Test notification failed. Check configuration or the email provider before retrying.",

@@ -26,7 +26,8 @@ export default function CrmPage() {
 }
 
 async function CrmContent() {
-  if (!(await staffUser()))
+  const staff = await staffUser();
+  if (!staff)
     return (
       <main className="mx-auto max-w-lg space-y-4 p-8">
         <h1 className="text-2xl font-semibold">Staff access required</h1>
@@ -41,14 +42,30 @@ async function CrmContent() {
     >
       <InquiryWorkspace
         inquiryId={randomUUID()}
+        staffEmail={staff.email}
         inquiries={inquiries.map(
-          ({ id, recipient, createdAt, jobStatus, emailId, smsStatus }) => ({
+          ({
+            id,
+            recipient,
+            createdAt,
+            jobStatus,
+            emailId,
+            smsStatus,
+            lastError,
+            sms,
+          }) => ({
             id,
             recipient,
             createdAt: createdAt.toISOString(),
             jobStatus,
             emailId,
             smsStatus,
+            lastError,
+            sms: sms && {
+              recipient: sms.recipient,
+              message: sms.message,
+              simulatedAt: sms.simulatedAt.toISOString(),
+            },
           }),
         )}
       />

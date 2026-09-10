@@ -1,16 +1,16 @@
+function emailList(value: string) {
+  return value
+    .split(",")
+    .map((entry) => entry.trim().toLowerCase())
+    .filter(Boolean);
+}
+
 export function isStaffEmail(
   email: string,
   verified: boolean,
   allowlist = process.env.CRM_STAFF_EMAILS ?? "",
 ) {
-  return (
-    verified &&
-    allowlist
-      .split(",")
-      .map((value) => value.trim().toLowerCase())
-      .filter(Boolean)
-      .includes(email.toLowerCase())
-  );
+  return verified && emailList(allowlist).includes(email.toLowerCase());
 }
 
 export function previewDatabaseUrl() {
@@ -30,14 +30,12 @@ export function previewDatabaseUrl() {
   return value;
 }
 
-export function testRecipient() {
-  const addresses = (process.env.TEST_EMAIL_ALLOWLIST ?? "")
-    .split(",")
-    .map((s) => s.trim().toLowerCase())
-    .filter(Boolean);
-  if (addresses.length !== 1 || addresses[0] !== "ovi@ovswebsites.com")
-    throw new Error("The test recipient must be ovi@ovswebsites.com.");
-  return addresses[0];
+// Test email goes only to a staff address on this list. Never to a borrower.
+export function isTestRecipient(
+  email: string,
+  allowlist = process.env.TEST_EMAIL_ALLOWLIST ?? "",
+) {
+  return emailList(allowlist).includes(email.toLowerCase());
 }
 
 export function canRetryEmail(createdAt: Date, now = Date.now()) {

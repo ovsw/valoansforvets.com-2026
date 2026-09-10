@@ -99,39 +99,69 @@ not a restore test. Neon's current history retention is six hours.
   and automated checks; they were not in that CLI review's reported file list.
 - A development database backup was saved and its archive index checked.
 
-## Hosted preview and Studio
+## Hosted test environment
 
-- Protected website: https://valoansforvets-com-2026-preview.vercel.app
-- Staff CRM: https://valoansforvets-com-2026-preview.vercel.app/crm
+During this phase, the `main` branch on the Vercel domain is the hosted test
+environment. There is no separate staging branch, Sanity dataset, or review
+Studio yet. Add them when a public domain goes live, because that is the
+first moment production content and production data differ from test.
+
+- Website: https://valoansforvets-com-2026.vercel.app
+- Staff CRM: https://valoansforvets-com-2026.vercel.app/crm
 - Hosted Studio: https://valoansforvets-com-2026.sanity.studio
-- Existing production: https://valoansforvets-com-2026.vercel.app
 
-The preview uses Vercel authentication. Keep project deployment protection on.
-The production site has not been promoted to this new build.
+The Vercel team is on the Hobby plan. The production URL has no Vercel
+protection. The CRM relies on Clerk sign-in plus the `CRM_STAFF_EMAILS`
+allowlist. The site sends `noindex` while `NEXT_PUBLIC_SITE_ENV` is not
+`production`. Keep that value at `development` until launch.
+Vercel Authentication stays on for pull-request previews only.
 
 | Variable | Local | Hosted |
 | --- | --- | --- |
 | Frontend `NEXT_PUBLIC_STUDIO_URL` | `http://localhost:3333` | `https://valoansforvets-com-2026.sanity.studio` |
-| Frontend `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` | Preview or production URL above, scoped by Vercel environment |
-| Studio `SANITY_STUDIO_PREVIEW_URL` | `http://localhost:3000` | Protected preview URL above (set by `deploy:hosted`) |
+| Frontend `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` | `https://valoansforvets-com-2026.vercel.app` |
+| Frontend `TRIGGER_SECRET_KEY` | Development key | Prod key from the Trigger.dev API keys page |
+| Frontend `PREVIEW_EMAIL_ENABLED` | `true` | `true` |
+| Frontend `CRM_STAFF_EMAILS` | Your address | All staff testers, comma separated |
+| Frontend `TEST_EMAIL_ALLOWLIST` | Your address | Same list as `CRM_STAFF_EMAILS` |
+| Studio `SANITY_STUDIO_PREVIEW_URL` | `http://localhost:3000` | `https://valoansforvets-com-2026.vercel.app` (set by `deploy:hosted`) |
 
-Sanity credentialed CORS permits these exact hosted origins and the local dev
-origins. The official `@sanity/vercel-protection-bypass` Studio tool reads its
-secret from protected document `sanity-preview-url-secret.vercel-protection-bypass`.
-Anonymous dataset reads cannot retrieve that document. Do not put this bypass
-secret in public environment variables, source, or links in documentation.
+Each staff tester needs a verified Clerk account with an address on both
+lists. The confirmation email goes to the address of the person who submits
+the test. Any staff member can retry any inquiry.
 
-Deploy from the linked repository root:
+Vercel deploys the website from `main`. The `Deploy worker` GitHub Action
+migrates the test database and deploys the Trigger.dev worker to the `prod`
+environment on every push to `main` that touches worker or database files.
+It needs two repository secrets: `PREVIEW_DATABASE_URL` and
+`TRIGGER_ACCESS_TOKEN` (a personal access token from Trigger.dev).
+Deploy the Studio by hand:
 
 ```sh
-pnpm dlx vercel deploy --yes --scope ovi-savescus-projects
-pnpm dlx vercel alias set <new-deployment-host> valoansforvets-com-2026-preview.vercel.app --scope ovi-savescus-projects
 pnpm --dir studio deploy:hosted --yes
 ```
 
 Local secret values stay in `frontend/.env.local` and `studio/.env.local`.
-Vercel environment values are managed separately in its project settings.
 Never replace either local file with a downloaded hosting environment file.
+
+## Acceptance test
+
+Run this with every local server and worker stopped.
+
+1. Open the CRM URL and sign in with Google, using an address on the staff list.
+2. Choose **New test inquiry**, then **Submit test inquiry**.
+3. Choose **Refresh** until the row shows **Complete**. This takes under a minute.
+4. Open the row with **View**. Confirm the email is accepted, the SMS section
+   shows the simulated message, and the inquiry ID is shown.
+5. Check your inbox for the test confirmation email.
+6. Use the search box, the status filter, and the date sort.
+7. Failure check: an inquiry that fails shows **Failed** and a **Last error**
+   box. Choose **Retry this inquiry**. A completed retry keeps the same email
+   ID, so no second email is sent.
+8. Open the hosted Studio, edit a page, and confirm the change shows in the
+   Studio preview. Use **Open in Studio** on the website preview to confirm it
+   opens the same document.
+9. Repeat steps 1 to 4 on a phone. Confirm navigation and forms work.
 
 ## Staff UI
 
@@ -145,8 +175,7 @@ sent. Staff outcomes and availability still need their domain implementation.
 
 ## Remaining infrastructure work
 
-The hosted preview dispatches to Trigger Development. Its worker currently runs
-locally; it is not an always-on hosted worker. Deploy the worker and configure
-its matching environment before relying on unattended job processing.
-The custom email sending domain and a full restore rehearsal also remain before
-the complete Basecamp infrastructure task can close.
+The custom email sending domain and a full restore rehearsal remain before
+the complete Basecamp infrastructure task can close. Real SMS and the
+newsletter stay deferred. A staging branch, dataset, and review Studio come
+with the public domain.

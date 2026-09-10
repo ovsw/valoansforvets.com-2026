@@ -54,5 +54,8 @@ it("accepts only a verified staff identity", async () => {
       },
     ],
   });
-  await expect(requireStaff()).resolves.toBe("user-staff");
+  await expect(requireStaff()).resolves.toEqual({
+    userId: "user-staff",
+    email: "ovi@ovswebsites.com",
+  });
 });
