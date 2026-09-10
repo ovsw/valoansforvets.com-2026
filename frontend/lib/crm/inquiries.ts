@@ -53,7 +53,8 @@ export async function submitTestInquiry(id: string) {
       .update(testInquiries)
       .set({ runId: run.id })
       .where(eq(testInquiries.id, id));
-  } catch {
+  } catch (error) {
+    console.error("Trigger.dev dispatch failed for inquiry", id, error);
     throw new Error(
       "The inquiry was saved, but the job could not be confirmed. Retry this inquiry.",
     );

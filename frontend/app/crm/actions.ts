@@ -9,7 +9,8 @@ export async function createTestInquiry(_previous: string, formData: FormData) {
   if (!parsed.success) return "Invalid test inquiry. Refresh the page.";
   try {
     await submitTestInquiry(parsed.data);
-  } catch {
+  } catch (error) {
+    console.error("Test inquiry action failed", error);
     return "The test could not finish. Refresh to check whether it was saved, then retry the same inquiry.";
   }
   revalidatePath("/crm");
