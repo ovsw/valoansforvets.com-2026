@@ -1,6 +1,6 @@
 import "server-only";
 import { tasks, idempotencyKeys } from "@trigger.dev/sdk";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 import { database } from "@/db/client";
 import { simulatedSms, testInquiries } from "@/db/schema";
 import type { testInquiry } from "@/trigger/test-inquiry";
@@ -59,4 +59,16 @@ export async function submitTestInquiry(id: string) {
       "The inquiry was saved, but the job could not be confirmed. Retry this inquiry.",
     );
   }
+}
+
+// Any staff member can delete any inquiry. The simulated SMS row cascades.
+// A running job for a deleted inquiry fails with "not found" and writes nothing.
+export async function deleteTestInquiries(ids: string[]) {
+  await requireStaff();
+  if (ids.length === 0) return 0;
+  const deleted = await database()
+    .delete(testInquiries)
+    .where(inArray(testInquiries.id, ids))
+    .returning({ id: testInquiries.id });
+  return deleted.length;
 }

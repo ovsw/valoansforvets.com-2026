@@ -22,7 +22,7 @@ export const testInquiries = pgTable("crm_test_inquiries", {
 export const simulatedSms = pgTable("crm_simulated_sms", {
   inquiryId: uuid("inquiry_id")
     .primaryKey()
-    .references(() => testInquiries.id),
+    .references(() => testInquiries.id, { onDelete: "cascade" }),
   recipient: text("recipient").notNull(),
   message: text("message").notNull(),
   simulatedAt: timestamp("simulated_at", { withTimezone: true })

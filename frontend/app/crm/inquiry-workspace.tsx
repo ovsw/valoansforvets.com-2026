@@ -23,6 +23,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { DeleteForm } from "./delete-form";
 import { RefreshButton } from "./refresh-button";
 import { TestForm } from "./test-form";
 
@@ -170,6 +171,7 @@ function InquiryDetails({ inquiry }: { inquiry: InquiryRow }) {
             </h3>
             <p className="mt-2 break-all font-mono text-xs">{inquiry.id}</p>
           </div>
+          <DeleteForm ids={[inquiry.id]} label="Delete this inquiry" />
         </div>
       </SheetContent>
     </Sheet>
@@ -190,6 +192,7 @@ export function InquiryWorkspace({
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [oldestFirst, setOldestFirst] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const visible = inquiries.filter(
     (row) =>
       (status === "all" || row.jobStatus === status) &&
@@ -198,6 +201,25 @@ export function InquiryWorkspace({
         .includes(search.toLowerCase()),
   );
   if (oldestFirst) visible.reverse();
+  // Only rows the user can see count as selected. A row hidden by a filter,
+  // or deleted elsewhere, drops out on the next render and cannot be deleted.
+  const selected = selectedIds.filter((id) =>
+    visible.some((row) => row.id === id),
+  );
+  const allVisibleSelected =
+    visible.length > 0 && visible.every((row) => selected.includes(row.id));
+  const toggleVisible = () =>
+    setSelectedIds(
+      allVisibleSelected
+        ? selected.filter((id) => !visible.some((row) => row.id === id))
+        : [...new Set([...selected, ...visible.map((row) => row.id)])],
+    );
+  const toggleOne = (id: string) =>
+    setSelectedIds(
+      selected.includes(id)
+        ? selected.filter((entry) => entry !== id)
+        : [...selected, id],
+    );
   const complete = inquiries.filter(
     (row) => row.jobStatus === "complete",
   ).length;
@@ -298,7 +320,19 @@ export function InquiryWorkspace({
               {inquiries.length}
             </span>
           </h2>
-          <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+            {selected.length > 0 && (
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-muted-foreground" role="status">
+                  {selected.length} selected
+                </span>
+                <DeleteForm
+                  key={selected.join(",")}
+                  ids={selected}
+                  label={`Delete ${selected.length}`}
+                />
+              </div>
+            )}
             <div className="relative min-w-0 flex-1">
               <Search className="absolute top-3 left-3 size-4 text-muted-foreground" />
               <Input
@@ -329,6 +363,16 @@ export function InquiryWorkspace({
             </caption>
             <thead className="border-b bg-muted/40 text-xs text-muted-foreground">
               <tr>
+                <th scope="col" className="w-10 pl-5">
+                  <input
+                    type="checkbox"
+                    aria-label="Select all shown inquiries"
+                    className="size-4 accent-primary"
+                    checked={allVisibleSelected}
+                    disabled={visible.length === 0}
+                    onChange={toggleVisible}
+                  />
+                </th>
                 <th scope="col" className="px-5 py-3 font-medium">
                   Inquiry
                 </th>
@@ -364,8 +408,18 @@ export function InquiryWorkspace({
               {visible.map((inquiry) => (
                 <tr
                   key={inquiry.id}
-                  className="border-b last:border-0 hover:bg-muted/30"
+                  className="border-b last:border-0 hover:bg-muted/30 data-[selected=true]:bg-muted/40"
+                  data-selected={selected.includes(inquiry.id)}
                 >
+                  <td className="pl-5">
+                    <input
+                      type="checkbox"
+                      aria-label={`Select inquiry ${inquiry.id}`}
+                      className="size-4 accent-primary"
+                      checked={selected.includes(inquiry.id)}
+                      onChange={() => toggleOne(inquiry.id)}
+                    />
+                  </td>
                   <td className="px-5 py-5">
                     <p className="whitespace-nowrap font-medium">
                       Test consultation request
@@ -384,7 +438,10 @@ export function InquiryWorkspace({
                     {createdLabel(inquiry.createdAt)}
                   </td>
                   <td className="pr-4">
-                    <InquiryDetails inquiry={inquiry} />
+                    <div className="flex items-center justify-end gap-1">
+                      <InquiryDetails inquiry={inquiry} />
+                      <DeleteForm ids={[inquiry.id]} compact />
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   insert: vi.fn(),
   row: vi.fn(),
   update: vi.fn(),
+  deleteWhere: vi.fn(),
   trigger: vi.fn(),
   key: vi.fn(),
 }));
@@ -18,7 +19,7 @@ vi.mock("@trigger.dev/sdk", () => ({
   tasks: { trigger: mocks.trigger },
   idempotencyKeys: { create: mocks.key },
 }));
-import { submitTestInquiry } from "./inquiries";
+import { deleteTestInquiries, submitTestInquiry } from "./inquiries";
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -37,6 +38,10 @@ beforeEach(() => {
     }),
     select: () => ({ from: () => ({ where: mocks.row }) }),
     update: () => ({ set: mocks.update.mockReturnValue({ where: vi.fn() }) }),
+    delete: () => ({ where: mocks.deleteWhere }),
+  });
+  mocks.deleteWhere.mockReturnValue({
+    returning: vi.fn().mockResolvedValue([{ id: "a" }, { id: "b" }]),
   });
 });
 
@@ -96,4 +101,20 @@ it("leaves a saved inquiry available after a dispatch error", async () => {
     recipient: "ovi@ovswebsites.com",
   });
   expect(mocks.update).not.toHaveBeenCalled();
+});
+
+it("deletes the given inquiries and reports how many were removed", async () => {
+  await expect(deleteTestInquiries(["a", "b", "missing"])).resolves.toBe(2);
+  expect(mocks.deleteWhere).toHaveBeenCalledTimes(1);
+});
+
+it("does not touch the database for an empty delete", async () => {
+  await expect(deleteTestInquiries([])).resolves.toBe(0);
+  expect(mocks.database).not.toHaveBeenCalled();
+});
+
+it("stops a delete before database access when staff authorization fails", async () => {
+  mocks.staff.mockRejectedValue(new Error("Denied"));
+  await expect(deleteTestInquiries(["a"])).rejects.toThrow("Denied");
+  expect(mocks.database).not.toHaveBeenCalled();
 });

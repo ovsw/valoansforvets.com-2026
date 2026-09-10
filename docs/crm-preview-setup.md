@@ -158,18 +158,26 @@ Run this with every local server and worker stopped.
 7. Failure check: an inquiry that fails shows **Failed** and a **Last error**
    box. Choose **Retry this inquiry**. A completed retry keeps the same email
    ID, so no second email is sent.
-8. Open the hosted Studio, edit a page, and confirm the change shows in the
+8. Delete check: open a row with **View** and choose **Delete this inquiry**,
+   then confirm. The row leaves the list. Tick two rows, choose **Delete 2**,
+   and confirm. Both rows leave the list. Cancel a confirm step and confirm
+   nothing was removed.
+9. Open the hosted Studio, edit a page, and confirm the change shows in the
    Studio preview. Use **Open in Studio** on the website preview to confirm it
    opens the same document.
-9. Repeat steps 1 to 4 on a phone. Confirm navigation and forms work.
+10. Repeat steps 1 to 4 on a phone. Confirm navigation and forms work.
 
 ## Staff UI
 
 The CRM uses adapted licensed Shadcnblocks `stats-card1` and `data-table1`, with
 existing shadcn components. The public hero uses `hero1`. The CRM style is the
 long-term staff interface direction. Its current data is still test inquiries.
-Search, status filters, date sorting, request details, refresh, and safe retries
-operate on the latest 20 records. Counts refer to that loaded list, not all-time
+Search, status filters, date sorting, request details, refresh, safe retries,
+and deletes operate on the latest 20 records. Any staff member can delete any
+inquiry from its row, its detail panel, or a checkbox selection. Each path has
+a confirm step. A delete removes the inquiry and its simulated SMS row for good;
+the database backup command is the only way back. A job still running for a
+deleted inquiry fails with "not found" and writes nothing. Counts refer to that loaded list, not all-time
 business totals. Email acceptance is separate from delivery. No customer SMS is
 sent. Staff outcomes and availability still need their domain implementation.
 

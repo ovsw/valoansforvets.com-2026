@@ -6,7 +6,6 @@ import { hostname } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 
-export const HOST = "127.0.0.1";
 export const SLOT_COUNT = 10;
 export const FRONTEND_BASE_PORT = 3000;
 export const STUDIO_BASE_PORT = 3333;
@@ -134,7 +133,11 @@ async function saveState(runtimeFile, state) {
   }
 }
 
-export async function isPortAvailable(port, host = HOST) {
+// The dev servers bind every interface in both IP families, like plain
+// "next dev". A loopback-only bind broke Next's own proxy hop to
+// "localhost" on IPv6 machines and shut out LAN devices and local
+// forwarders. The probe binds the same way so it sees the same conflicts.
+export async function isPortAvailable(port) {
   return new Promise((resolve, reject) => {
     const server = net.createServer();
     server.unref();
@@ -142,7 +145,7 @@ export async function isPortAvailable(port, host = HOST) {
       if (error.code === "EADDRINUSE" || error.code === "EACCES") resolve(false);
       else reject(error);
     });
-    server.listen({ host, port, exclusive: true }, () => {
+    server.listen({ port, exclusive: true }, () => {
       server.close((error) => (error ? reject(error) : resolve(true)));
     });
   });
