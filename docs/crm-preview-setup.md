@@ -1,66 +1,53 @@
 # CRM development flow
 
-## Open and run
+This is one shared internal CRM for PHXHomeLoan.com and VALoansForVets.com.
+The current flow creates test inquiries only. There is no quiz, intake API,
+booking, or funnel implementation yet.
 
-Open <http://localhost:3000/crm>. Sign in through Clerk with the verified
-`ovi@ovswebsites.com` address. A Clerk dashboard login is separate from the
-website login. Other signed-in accounts cannot read or create test inquiries.
+## Run locally
 
-From the repo root, run these commands in separate terminals:
+From the repository root, run the app and worker in separate terminals:
 
 ```sh
-pnpm --dir frontend dev
-pnpm --dir frontend trigger:dev
+pnpm dev
+pnpm trigger:login
+pnpm trigger:dev
 ```
 
-The worker reads `frontend/.env.local`. Restart it after changing a setting.
-Do not print, commit, replace, or copy these secrets into Studio.
+Open <http://localhost:3000/crm>. Sign in with the verified staff address
+allowed by `CRM_STAFF_EMAILS`. The worker reads `frontend/.env.local`.
 
-## What the test does
+## Test behavior
 
 1. A staff-only Server Action accepts a generated inquiry ID.
-2. The server saves a fixed test inquiry in Neon. No borrower fields are accepted.
-3. Trigger.dev receives only the inquiry ID and reads the record from Neon.
-4. Resend sends a test confirmation only to `ovi@ovswebsites.com`.
+2. The server saves a fixed test inquiry in the Neon development branch.
+3. Trigger.dev receives only that ID and reads the record from Neon.
+4. Resend sends a confirmation only to `TEST_EMAIL_ALLOWLIST`.
 5. The worker records simulated SMS and job completion.
-6. Refresh the CRM page to see the result. Use the Resend link to check delivery.
 
-“Accepted by Resend” does not mean delivered. Delivery is checked in Resend;
-there is no delivery webhook yet. SMS never contacts a provider.
+Resend acceptance is not delivery. Check delivery in Resend; no delivery
+webhook exists. SMS never contacts a provider.
 
-A failed dispatch leaves the saved record available for retry. Retrying uses
-that record ID. A global Trigger.dev idempotency key deduplicates concurrent
-dispatches for the same inquiry. Trigger.dev clears the key after a failed run,
-so a later retry can create a new run. Completed jobs skip sending. Resend also receives a stable
-idempotency key. Email retries stop after 23 hours to stay inside Resend's
-24-hour idempotency window. For an older incomplete record, inspect Resend
-before deciding whether to create a new test. The task queue runs one job at
-a time. A saved pending record can be retried if the app stops before dispatch.
+A failed dispatch leaves the record available for retry. A global Trigger
+idempotency key deduplicates concurrent dispatches for one inquiry and clears
+after a failed run. Completed jobs skip sending. Resend uses a stable key;
+email retries stop after 23 hours to stay within Resend's 24-hour window. The
+queue runs one job at a time.
 
-## Environment and ownership
+## Services and data
 
-All current service projects belong to the developer's workspace. Client
-ownership and production deployment remain separate work.
+- Clerk development app: verified identities and `CRM_STAFF_EMAILS`.
+- Neon project `bold-brook-55267955`, development branch
+  `br-flat-pond-ayj3kzbk`.
+- Trigger.dev project `proj_zufesthoajsdxpvfeqsr`.
+- Resend test sender `onboarding@resend.dev`.
 
-- Next.js: staff UI and server authorization.
-- Clerk: development app authentication; `CRM_STAFF_EMAILS` restricts verified identities.
-- Neon: project `bold-brook-55267955`, development branch `br-flat-pond-ayj3kzbk`.
-- Trigger.dev: project `proj_zufesthoajsdxpvfeqsr`, local Development worker.
-- Resend: developer workspace, test sender `onboarding@resend.dev`.
-- Sanity: website content only. No dataset was changed for this flow.
+`PREVIEW_DATABASE_URL` must point to the development branch. The test code
+rejects the production host. `PREVIEW_EMAIL_ENABLED` is off by default and
+must be enabled only for the approved test recipient. No customer email or
+SMS is enabled.
 
-`PREVIEW_DATABASE_URL` points at the development branch. The test code rejects
-any other host, including the production host. The pre-existing `DATABASE_URL`
-was preserved and is not used by this test flow. The development branch was
-created schema-only with automatic deletion disabled.
-
-`PREVIEW_EMAIL_ENABLED` is `true` locally for the authorized email test.
-The example defaults to `false`. The worker also requires the fixed test
-recipient, `TEST_EMAIL_ALLOWLIST`, `RESEND_FROM`, and `RESEND_API_KEY`.
-No customer email or SMS is enabled. Clerk and Trigger keys remain server-only,
-except Clerk's intentionally public publishable key.
-
-## Migrations and backups
+Migration and backup commands:
 
 ```sh
 pnpm --dir frontend db:generate
@@ -68,122 +55,34 @@ pnpm --dir frontend db:migrate:preview
 pnpm --dir frontend db:backup:preview
 ```
 
-Migration files are checked into `frontend/drizzle/`. The migration runner
-uses only the pinned development database. It never falls back to `DATABASE_URL`.
-The backup command needs PostgreSQL 18 `pg_dump` and `pg_restore`. It saves a
-custom-format archive in ignored `frontend/.local/backups/`, with file mode
-0600, and checks its table-of-contents. The command does not print credentials.
-Keep backups outside Git and keep a separate secure copy before material changes.
+Backups are local ignored archives. The September 11, 2026 archive index check
+passed; this is not a restore rehearsal. A full restore test is still pending.
 
-To restore, use `pg_restore --no-owner --no-acl --exit-on-error` into a separate,
-empty PostgreSQL database. Provide connection settings through PostgreSQL's
-standard environment variables. Compare the restored schema and record counts
-before switching any application connection. Do not restore over production.
-A complete restore rehearsal has not yet been performed; an archive check is
-not a restore test. Neon's current history retention is six hours.
+## Hosted test app
 
-## Verified on September 10, 2026
+Open <https://valoansforvets-crm.vercel.app/crm>. Vercel serves `main`; the
+Trigger workflow deploys the hosted `prod` test worker when its files change.
+The old alias remains until cutover. No hosted Sanity Studio or dataset is
+part of this CRM. Existing hosted Sanity data was preserved.
 
-- The user signed in and submitted inquiry `09eef6e4-9d08-4028-93e4-c05952bae7b4`.
-- Its first job failed with preview email disabled. Retrying the same record
-  after restarting the worker with email enabled completed successfully.
-- Resend marked email `071485b9-7033-46b8-816c-1ad52746b26d` Delivered.
-- Two concurrent replay requests completed and retained that same email ID.
-- The CRM showed database Saved, job complete, email accepted, and SMS simulated.
-- An anonymous visit to `/crm` redirected to sign-in. Automated checks cover
-  unverified and non-staff identities, production database rejection, recipient
-  restrictions, retry expiry, and the existing blog proxy behavior (27 checks).
-- Next.js production build passed. One CodeRabbit review of tracked changes
-  raised authorization as a concern; the page and data operations already
-  enforce verified staff authorization. New files received local inspection
-  and automated checks; they were not in that CLI review's reported file list.
-- A development database backup was saved and its archive index checked.
+The list and counts cover the latest 20 records. Any authorized staff member
+can view, retry, or delete an inquiry, including multi-select deletion; each
+delete has a confirmation step. Deletion also removes the simulated SMS row.
+A running job for a deleted inquiry fails as not found. A database backup is
+the only recovery path.
 
-## Hosted test environment
+To rehearse recovery, restore a custom-format archive with
+`pg_restore --no-owner --no-acl --exit-on-error` into a separate empty
+PostgreSQL database. Compare schema and record counts before using it. Never
+restore over production. Backups are ignored local files with mode 0600; keep
+a separate secure copy for material changes.
 
-During this phase, the `main` branch on the Vercel domain is the hosted test
-environment. There is no separate staging branch, Sanity dataset, or review
-Studio yet. Add them when a public domain goes live, because that is the
-first moment production content and production data differ from test.
+## Historical verification
 
-- Website: https://valoansforvets-com-2026.vercel.app
-- Staff CRM: https://valoansforvets-com-2026.vercel.app/crm
-- Hosted Studio: https://valoansforvets-com-2026.sanity.studio
-
-The Vercel team is on the Hobby plan. The production URL has no Vercel
-protection. The CRM relies on Clerk sign-in plus the `CRM_STAFF_EMAILS`
-allowlist. The site sends `noindex` while `NEXT_PUBLIC_SITE_ENV` is not
-`production`. Keep that value at `development` until launch.
-Vercel Authentication stays on for pull-request previews only.
-
-| Variable | Local | Hosted |
-| --- | --- | --- |
-| Frontend `NEXT_PUBLIC_STUDIO_URL` | `http://localhost:3333` | `https://valoansforvets-com-2026.sanity.studio` |
-| Frontend `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` | `https://valoansforvets-com-2026.vercel.app` |
-| Frontend `TRIGGER_SECRET_KEY` | Development key | Prod key from the Trigger.dev API keys page |
-| Frontend `PREVIEW_EMAIL_ENABLED` | `true` | `true` |
-| Frontend `CRM_STAFF_EMAILS` | Your address | All staff testers, comma separated |
-| Frontend `TEST_EMAIL_ALLOWLIST` | Your address | Same list as `CRM_STAFF_EMAILS` |
-| Studio `SANITY_STUDIO_PREVIEW_URL` | `http://localhost:3000` | `https://valoansforvets-com-2026.vercel.app` (set by `deploy:hosted`) |
-
-Each staff tester needs a verified Clerk account with an address on both
-lists. The confirmation email goes to the address of the person who submits
-the test. Any staff member can retry any inquiry.
-
-Vercel deploys the website from `main`. The `Deploy worker` GitHub Action
-migrates the test database and deploys the Trigger.dev worker to the `prod`
-environment on every push to `main` that touches worker or database files.
-It needs two repository secrets: `PREVIEW_DATABASE_URL` and
-`TRIGGER_ACCESS_TOKEN` (a personal access token from Trigger.dev).
-Deploy the Studio by hand:
-
-```sh
-pnpm --dir studio deploy:hosted --yes
-```
-
-Local secret values stay in `frontend/.env.local` and `studio/.env.local`.
-Never replace either local file with a downloaded hosting environment file.
-
-## Acceptance test
-
-Run this with every local server and worker stopped.
-
-1. Open the CRM URL and sign in with Google, using an address on the staff list.
-2. Choose **New test inquiry**, then **Submit test inquiry**.
-3. Watch the list. The row moves to **Complete** in under a minute without a reload.
-4. Open the row with **View**. Confirm the email is accepted, the SMS section
-   shows the simulated message, and the inquiry ID is shown.
-5. Check your inbox for the test confirmation email.
-6. Use the search box, the status filter, and the date sort.
-7. Failure check: an inquiry that fails shows **Failed** and a **Last error**
-   box. Choose **Retry this inquiry**. A completed retry keeps the same email
-   ID, so no second email is sent.
-8. Delete check: open a row with **View** and choose **Delete this inquiry**,
-   then confirm. The row leaves the list. Tick two rows, choose **Delete 2**,
-   and confirm. Both rows leave the list. Cancel a confirm step and confirm
-   nothing was removed.
-9. Open the hosted Studio, edit a page, and confirm the change shows in the
-   Studio preview. Use **Open in Studio** on the website preview to confirm it
-   opens the same document.
-10. Repeat steps 1 to 4 on a phone. Confirm navigation and forms work.
-
-## Staff UI
-
-The CRM uses adapted licensed Shadcnblocks `stats-card1` and `data-table1`, with
-existing shadcn components. The public hero uses `hero1`. The CRM style is the
-long-term staff interface direction. Its current data is still test inquiries.
-Search, status filters, date sorting, request details, refresh, safe retries,
-and deletes operate on the latest 20 records. Any staff member can delete any
-inquiry from its row, its detail panel, or a checkbox selection. Each path has
-a confirm step. A delete removes the inquiry and its simulated SMS row for good;
-the database backup command is the only way back. A job still running for a
-deleted inquiry fails with "not found" and writes nothing. Counts refer to that loaded list, not all-time
-business totals. Email acceptance is separate from delivery. No customer SMS is
-sent. Staff outcomes and availability still need their domain implementation.
-
-## Remaining infrastructure work
-
-The custom email sending domain and a full restore rehearsal remain before
-the complete Basecamp infrastructure task can close. Real SMS and the
-newsletter stay deferred. A staging branch, dataset, and review Studio come
-with the public domain.
+On September 10, 2026, staff submitted inquiry
+`09eef6e4-9d08-4028-93e4-c05952bae7b4`. Its first run failed with email
+disabled; retrying after enabling the approved test email completed. Resend
+marked message `071485b9-7033-46b8-816c-1ad52746b26d` Delivered. Concurrent
+replays retained that message ID. The CRM showed database saved, job complete,
+email accepted, and SMS simulated. Anonymous, unverified, non-staff,
+production-database, recipient, and retry-boundary checks also passed.

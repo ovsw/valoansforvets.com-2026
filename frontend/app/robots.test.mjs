@@ -4,7 +4,9 @@ import test from "node:test";
 
 const source = readFileSync(new URL("./robots.ts", import.meta.url), "utf8");
 
-test("robots is indexable only in production", () => {
-  assert.match(source, /NEXT_PUBLIC_SITE_ENV === "production"/);
-  assert.match(source, /isProduction \? \{ allow: "\/" \} : \{ disallow: "\/" \}/);
+test("robots blocks every crawler", () => {
+  assert.match(source, /userAgent: "\*"/);
+  assert.match(source, /disallow: "\/"/);
+  assert.doesNotMatch(source, /\ballow:/);
+  assert.doesNotMatch(source, /sitemap:/);
 });

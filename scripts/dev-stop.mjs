@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// Lists and stops Next.js and Sanity dev servers started from any worktree of
+// Lists and stops Next.js dev servers started from any worktree of
 // this repository. Each server is reported as one tree: the launcher plus every
 // descendant (next-server, Turbopack workers). Killing the launcher is enough
 // for `dev-worktree.mjs` to stop its sibling and release the port slot.
@@ -13,7 +13,7 @@ import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 const repoRoot = await realpath(path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."));
-const SERVER_PATTERN = /\b(next|sanity) dev\b/;
+const SERVER_PATTERN = /\bnext dev\b/;
 const GRACE_MS = 5_000;
 
 const USAGE = `Usage: pnpm dev:stop [--all | --here | --orphans | --port <port>...]
@@ -75,13 +75,13 @@ export function isDevCommand(args) {
   // ps includes shell command bodies. Do not treat a shell, editor, or test
   // that merely mentions a dev command as a server.
   const executable = path.basename(args.trim().split(/\s+/)[0]);
-  return /^(?:node|nodejs|pnpm|next|sanity)$/.test(executable) && SERVER_PATTERN.test(args);
+  return /^(?:node|nodejs|pnpm|next)$/.test(executable) && SERVER_PATTERN.test(args);
 }
 
 function worktreeOf(cwd) {
   if (!cwd) return "?";
   const base = path.basename(cwd);
-  return base === "frontend" || base === "studio" ? path.dirname(cwd) : cwd;
+  return base === "frontend" ? path.dirname(cwd) : cwd;
 }
 
 export async function registeredWorktrees(root) {
@@ -117,12 +117,11 @@ export async function findServers(processes, allowedRoots, cwdFor = readCwd) {
       queue.push(...(children.get(current.pid) ?? []));
     }
 
-    const kindMatch = SERVER_PATTERN.exec(proc.args);
     const portMatch = /--port[= ](\d+)/.exec(proc.args);
     servers.push({
       root: proc,
       tree,
-      kind: kindMatch[1] === "next" ? "website" : "studio",
+      kind: "crm",
       port: portMatch ? Number(portMatch[1]) : undefined,
       worktree,
       orphan: !parent || parent.pid === 1 || /systemd/.test(parent.args),

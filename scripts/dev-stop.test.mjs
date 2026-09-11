@@ -5,14 +5,14 @@ import { findServers, isDevCommand, parseArgs, selectServers, signalIfSameProces
 test("shells that mention dev commands are not server launchers", () => {
   assert.equal(isDevCommand("bash -c node next dev"), false);
   assert.equal(isDevCommand("/usr/bin/node /repo/node_modules/.bin/next dev --port 3000"), true);
-  assert.equal(isDevCommand("pnpm --dir studio exec sanity dev"), true);
+  assert.equal(isDevCommand("pnpm --dir frontend exec next dev"), true);
 });
 
 test("all and port selection stay within registered worktrees", async () => {
   const processes = new Map([1, 2, 3, 4].map((pid) => [pid, {
     pid, ppid: 0, args: "node next dev --port 3000", rssKb: 0,
   }]));
-  const cwd = { 1: "/repo/frontend", 2: "/other/frontend", 3: "/repo-copy/frontend", 4: "/linked/studio" };
+  const cwd = { 1: "/repo/frontend", 2: "/other/frontend", 3: "/repo-copy/frontend", 4: "/linked/frontend" };
   const servers = await findServers(processes, new Set(["/repo", "/linked"]), async (pid) => cwd[pid]);
   assert.deepEqual(servers.map((s) => s.root.pid), [1, 4]);
   assert.equal(selectServers(servers, parseArgs(["--all"])).length, 2);

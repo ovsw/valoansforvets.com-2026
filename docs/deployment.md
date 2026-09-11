@@ -1,35 +1,36 @@
 # Deployment
 
-The Website and Studio are separate applications.
+The CRM is a standalone Next.js application. Vercel hosts the web app and
+Trigger.dev hosts its worker. One owner deploys the worker:
+`.github/workflows/deploy-worker.yml` on `main` pushes.
 
-## Website on Vercel
+## Vercel
 
-1. Import the GitHub repository into Vercel.
-2. Set the project root directory to `frontend`.
-3. Add the variables from `frontend/.env.local.example`.
-4. Use `main` as the production branch.
-5. Require the GitHub `Release gate` check before pull requests can merge into `main`.
+The private GitHub repository is deployed with `frontend` as the project
+root in the paid Studio ROVST team. Project ID:
+`prj_YY6MeizqVoVEnsg7MRI41oD572D5`. Current URL:
+<https://valoansforvets-crm.vercel.app>.
 
-Vercel may create preview deployments for pull requests. Production deploys come only from verified revisions merged into `main`.
+Production deploys use `main`. Set variables from
+`frontend/.env.local.example`, including the production Trigger secret and
+the staff and test-recipient allowlists. The application remains a private
+test CRM until a real production data flow exists.
 
-## Worker on Trigger.dev
+The old `valoansforvets-com-2026.vercel.app` alias remains until cutover and
+will then redirect to the new CRM URL.
 
-The `Deploy worker` GitHub Action migrates the test database and deploys the Trigger.dev worker when `main` changes worker or database files. See `trigger-setup.md` and `crm-preview-setup.md`.
+## Trigger.dev
 
-## Studio on Sanity
+Trigger project `proj_zufesthoajsdxpvfeqsr` retains the hosted `prod`
+environment. It is a test worker using the pinned Neon development branch.
+The workflow deploys it when worker or database files change on `main`.
 
-Add the values from `studio/.env.local.example`, then deploy manually from the repository root:
+Required repository secrets are `PREVIEW_DATABASE_URL` and
+`TRIGGER_ACCESS_TOKEN`. See [Trigger setup](trigger-setup.md).
 
-```bash
-pnpm --dir studio deploy
-```
+## Release checks
 
-Do not add Studio deployment CI. The Starter also omits one-click Vercel deployment because every copy needs its own Sanity project and credentials.
-
-## Before the first production deploy
-
-- Run `pnpm verify`.
-- Add the Website and Studio origins to the Sanity project's CORS settings.
-- Confirm the Vercel root directory is `frontend`.
-- Confirm the GitHub `Release gate` check is required on `main`.
-- Confirm the Studio hostname belongs to this copy of the Starter.
+Run `pnpm verify`, confirm anonymous redirect and staff allowlist behavior,
+and confirm the worker and website use the same Trigger environment and Neon
+development branch. The test worker is not a production intake or booking
+system.

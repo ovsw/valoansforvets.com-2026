@@ -10,7 +10,7 @@ import { execFile } from "node:child_process";
 
 const execFileAsync = promisify(execFile);
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const approvedEnvPaths = ["frontend/.env.local", "studio/.env.local"];
+const approvedEnvPaths = ["frontend/.env.local"];
 
 function sourceArgument(argv) {
   if (argv.length === 0) return undefined;

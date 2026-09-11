@@ -2,7 +2,7 @@
 // Shadcnblocks sidebar1. Navigation points only to implemented destinations.
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Inbox, Globe, FileText, Shield } from "lucide-react";
+import { Inbox, Shield } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -15,7 +15,6 @@ import {
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -30,10 +29,8 @@ import {
 } from "@/components/ui/sidebar";
 export function CrmShell({
   children,
-  studioUrl,
 }: {
   children: ReactNode;
-  studioUrl: string;
 }) {
   return (
     <SidebarProvider>
@@ -53,7 +50,7 @@ export function CrmShell({
                     <Shield className="size-5" />
                   </span>
                   <span className="flex flex-col gap-0.5 leading-none">
-                    <span className="font-medium">VA Loans for Vets</span>
+                    <span className="font-medium">VA Loans for Vets CRM</span>
                     <span className="text-xs text-muted-foreground">
                       Team workspace
                     </span>
@@ -80,31 +77,6 @@ export function CrmShell({
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
-        <SidebarFooter>
-          <SidebarGroup>
-            <SidebarGroupLabel>Content</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <Link href="/">
-                      <Globe />
-                      View website
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <a href={studioUrl}>
-                      <FileText />
-                      Sanity Studio
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarFooter>
         <SidebarRail />
       </Sidebar>
       <SidebarInset>

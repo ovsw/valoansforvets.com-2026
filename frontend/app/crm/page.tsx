@@ -7,7 +7,7 @@ import { listTestInquiries } from "@/lib/crm/inquiries";
 import { InquiryWorkspace } from "./inquiry-workspace";
 
 export const metadata = {
-  title: "Inquiries · Staff CRM",
+  title: "Inquiries",
   robots: "noindex, nofollow",
 };
 
@@ -37,9 +37,7 @@ async function CrmContent() {
     );
   const inquiries = await listTestInquiries();
   return (
-    <CrmShell
-      studioUrl={process.env.NEXT_PUBLIC_STUDIO_URL || "http://localhost:3333"}
-    >
+    <CrmShell>
       <InquiryWorkspace
         inquiryId={randomUUID()}
         staffEmail={staff.email}

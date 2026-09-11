@@ -1,10 +1,17 @@
-# VALoansForVets.com
+# Shared mortgage CRM
 
-VALoansForVets.com is a mortgage brand and website of The Highly Motivated Vercellino Team exclusively for a nationwide audience of veterans. It focuses on VA loans and includes help finding another mortgage when a veteran cannot use a VA loan.
+The Highly Motivated Vercellino Team serves people through VALoansForVets.com
+and PHXHomeLoan.com. Both brands share customer relationship management,
+marketing follow-up, and appointment booking.
 
 ## Language
 
 ### Business identities
+
+**Shared CRM**:
+The team’s common place to manage relationships and activity for people who
+enter through either Web Property. One customer relationship can include
+requests from both brands. Confirmed by the project owner, 2026-09-11.
 
 **The Highly Motivated Vercellino Team**:
 The mortgage originator behind VALoansForVets.com. The team is led by Jimmy Vercellino.

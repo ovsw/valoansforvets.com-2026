@@ -11,14 +11,10 @@ function parseArgs(argv) {
   const values = {};
   for (let index = 0; index < argv.length; index += 1) {
     const flag = argv[index];
-    if (flag !== "--frontend-port" && flag !== "--studio-port") {
-      throw new Error(
-        "Usage: pnpm dev:worktree [--frontend-port <port> --studio-port <port>]",
-      );
-    }
+    if (flag !== "--port") throw new Error("Usage: pnpm dev:worktree [--port <port>]");
     const value = argv[index + 1];
     if (!value) throw new Error(`${flag} needs a value.`);
-    values[flag === "--frontend-port" ? "frontendPort" : "studioPort"] = value;
+    values.frontendPort = value;
     index += 1;
   }
   return values;
@@ -36,21 +32,16 @@ async function main() {
     await ports.release();
   }
   const frontendUrl = `http://localhost:${ports.frontendPort}`;
-  const studioUrl = `http://localhost:${ports.studioPort}`;
   const childEnvironment = {
     ...process.env,
-    NEXT_PUBLIC_SITE_URL: frontendUrl,
-    NEXT_PUBLIC_STUDIO_URL: studioUrl,
-    SANITY_STUDIO_PREVIEW_URL: frontendUrl,
   };
 
   console.log(`Worktree slot ${ports.slot}`);
-  console.log(`Website: ${frontendUrl}`);
-  console.log(`Studio:  ${studioUrl}`);
+  console.log(`CRM: ${frontendUrl}`);
 
   const commands = [
     {
-      name: "Website",
+      name: "CRM",
       args: [
         "--dir",
         "frontend",
@@ -59,20 +50,6 @@ async function main() {
         "dev",
         "--port",
         String(ports.frontendPort),
-      ],
-    },
-    {
-      name: "Studio",
-      args: [
-        "--dir",
-        "studio",
-        "exec",
-        "sanity",
-        "dev",
-        "--host",
-        "::",
-        "--port",
-        String(ports.studioPort),
       ],
     },
   ];

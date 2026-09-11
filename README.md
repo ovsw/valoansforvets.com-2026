@@ -1,40 +1,46 @@
-VALoansForVets.com 2026
+# VALoansForVets CRM
 
-Bootstrapped from [ovsw/next-sanity-starter](https://github.com/ovsw/next-sanity-starter), commit `c96f7dcb1ebb3ac55762166948725ef046697a9c`.
+`valoansforvets-crm` is one private internal CRM for the teams behind
+PHXHomeLoan.com and VALoansForVets.com. This repository owns the staff
+interface, database integration, and Trigger.dev worker.
+
+The current application supports staff-only test inquiries. It does not yet
+provide a quiz, an intake API, appointment booking, or marketing funnels.
 
 ## Local development
 
-Use Node.js 24.x and pnpm 11.10.0. Dependencies and local environment files are set up in this worktree.
+Use Node.js 24.x and pnpm 11.10.0.
 
 ```bash
+pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-- Website: http://localhost:3000
-- Studio homepage in Presentation: http://localhost:3333/presentation?preview=%2F
-- Sanity project: [valoansforvets.com-2026](https://www.sanity.io/manage/project/5s6rmni1)
-- Project ID: `5s6rmni1`
-- Dataset: `production` (public)
+Copy `frontend/.env.local.example` to `frontend/.env.local` and fill in
+the development values before starting the app.
 
-The dataset contains the starter's sample content. Edit it in Studio, or run `pnpm unseed` before you add real content. Unseed removes marked starter content; it does not empty the dataset.
+Open <http://localhost:3000/crm> and sign in with a verified address in the
+`CRM_STAFF_EMAILS` allowlist. In a second terminal run `pnpm trigger:login`
+and then `pnpm trigger:dev`. The worker reads `frontend/.env.local`;
+restart it after changing a value. Keep secrets server-only and do not commit
+the file.
 
-Local settings and project-scoped tokens are in ignored `frontend/.env.local` and `studio/.env.local` files. The website token has the Viewer role. The Studio token has the Editor role for content scripts. Project administration needs your Sanity CLI login; the Editor token cannot manage CORS or project settings. Do not commit either environment file.
+Useful checks are `pnpm typecheck`, `pnpm lint`, `pnpm test`, and
+`pnpm build`.
 
-For another worktree of this repository:
+## Services
 
-```bash
-pnpm setup:worktree --source /absolute/path/to/this/configured-worktree
-pnpm dev:worktree
-```
+- Clerk authenticates staff. Only verified identities listed in
+  `CRM_STAFF_EMAILS` can use the CRM.
+- Neon provides the database. Test work uses the pinned development branch;
+  the application rejects the production host for this flow.
+- Trigger.dev runs the test inquiry worker.
+- Resend sends email only to the configured test allowlist when enabled. SMS
+  is simulated and never contacts a provider.
 
-For a fresh clone, run `pnpm install --frozen-lockfile` and `pnpm setup` with this project's settings and new tokens. For local use, set `NEXT_PUBLIC_STUDIO_URL=http://localhost:3333` in `frontend/.env.local` after setup. The setup script otherwise uses a hosted Studio URL. No hosted Studio or website has been deployed.
+The hosted test application is <https://valoansforvets-crm.vercel.app/crm>.
+The Vercel project is `prj_YY6MeizqVoVEnsg7MRI41oD572D5` in the paid Studio
+ROVST team. The old Vercel alias remains during cutover.
 
-Useful checks:
-
-```bash
-pnpm typecheck
-pnpm lint
-pnpm test:smoke
-```
-
-The original `AGENTS.md`, `CLAUDE.md`, `CONTEXT.md`, and existing files in `docs/` are preserved. The existing context still describes PHXHomeLoan.com; it has not been rewritten as part of setup.
+See [CRM development flow](docs/crm-preview-setup.md) and
+[deployment](docs/deployment.md).

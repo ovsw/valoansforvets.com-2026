@@ -1,13 +1,9 @@
 packages:
-  - "studio"
   - "frontend"
 
 strictDepBuilds: true
 minimumReleaseAge: 1440
 blockExoticSubdeps: true
-
-patchedDependencies:
-  sanity-plugin-media@5.0.11: patches/sanity-plugin-media@5.0.11.patch
 
 allowBuilds:
   # Deployment helper; local Trigger.dev workers do not need its downloaded binary.

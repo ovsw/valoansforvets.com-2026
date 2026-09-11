@@ -8,9 +8,8 @@ import { promisify } from "node:util";
 
 export const SLOT_COUNT = 10;
 export const FRONTEND_BASE_PORT = 3000;
-export const STUDIO_BASE_PORT = 3333;
 export const RUNTIME_FILE = ".worktree-ports.json";
-const STATE_VERSION = 1;
+const STATE_VERSION = 2;
 const RESERVATION_DIRECTORY = "worktree-port-reservations";
 const INCOMPLETE_RESERVATION_GRACE_MS = 30_000;
 const execFileAsync = promisify(execFile);
@@ -24,7 +23,6 @@ export function portsForSlot(slot) {
     version: STATE_VERSION,
     slot,
     frontendPort: FRONTEND_BASE_PORT + slot,
-    studioPort: STUDIO_BASE_PORT + slot,
   };
 }
 
@@ -43,45 +41,24 @@ function parsePort(value, label) {
 
 export function validateOverrides(overrides = {}) {
   const hasFrontend = overrides.frontendPort !== undefined;
-  const hasStudio = overrides.studioPort !== undefined;
-  if (!hasFrontend && !hasStudio) return undefined;
-  if (!hasFrontend || !hasStudio) {
-    throw new Error("Provide both --frontend-port and --studio-port together.");
-  }
+  if (!hasFrontend) return undefined;
 
   const frontendPort = parsePort(overrides.frontendPort, "Frontend port");
-  const studioPort = parsePort(overrides.studioPort, "Studio port");
-  if (frontendPort === studioPort) throw new Error("Frontend and Studio ports must differ.");
-
   const frontendSlot = frontendPort - FRONTEND_BASE_PORT;
-  const studioSlot = studioPort - STUDIO_BASE_PORT;
-  if (
-    frontendSlot < 0 ||
-    frontendSlot >= SLOT_COUNT ||
-    studioSlot < 0 ||
-    studioSlot >= SLOT_COUNT
-  ) {
+  if (frontendSlot < 0 || frontendSlot >= SLOT_COUNT) {
     throw new Error(
-      `Overrides must stay inside the Sanity CORS pool: frontend ${FRONTEND_BASE_PORT}-${FRONTEND_BASE_PORT + SLOT_COUNT - 1}, Studio ${STUDIO_BASE_PORT}-${STUDIO_BASE_PORT + SLOT_COUNT - 1}.`,
+      `Port must be between ${FRONTEND_BASE_PORT} and ${FRONTEND_BASE_PORT + SLOT_COUNT - 1}.`,
     );
   }
-  if (frontendSlot !== studioSlot) {
-    throw new Error("Frontend and Studio overrides must use the same port slot.");
-  }
-
   return portsForSlot(frontendSlot);
 }
 
 function normalizeSavedState(value) {
   if (!value || typeof value !== "object") return undefined;
   const frontendPort = Number(value.frontendPort);
-  const studioPort = Number(value.studioPort);
   const frontendSlot = frontendPort - FRONTEND_BASE_PORT;
-  const studioSlot = studioPort - STUDIO_BASE_PORT;
   if (
     !Number.isInteger(frontendPort) ||
-    !Number.isInteger(studioPort) ||
-    frontendSlot !== studioSlot ||
     frontendSlot < 0 ||
     frontendSlot >= SLOT_COUNT
   ) {
@@ -94,8 +71,7 @@ function normalizeSavedState(value) {
     migrated:
       value.version !== STATE_VERSION ||
       value.slot !== normalized.slot ||
-      value.frontendPort !== normalized.frontendPort ||
-      value.studioPort !== normalized.studioPort,
+      value.frontendPort !== normalized.frontendPort,
   };
 }
 
@@ -152,11 +128,7 @@ export async function isPortAvailable(port) {
 }
 
 async function stateIsAvailable(state, probe) {
-  const [frontendAvailable, studioAvailable] = await Promise.all([
-    probe(state.frontendPort),
-    probe(state.studioPort),
-  ]);
-  return frontendAvailable && studioAvailable;
+  return probe(state.frontendPort);
 }
 
 async function defaultReservationRoot(worktreeRoot) {
@@ -315,7 +287,7 @@ export async function allocatePorts({
     const release = await reserveIfAvailable(overrideState);
     if (!release) {
       throw new Error(
-        `Requested slot ${overrideState.slot} is busy (${overrideState.frontendPort}/${overrideState.studioPort}).`,
+        `Requested slot ${overrideState.slot} is busy (${overrideState.frontendPort}).`,
       );
     }
     try {
@@ -332,7 +304,7 @@ export async function allocatePorts({
     const release = await reserveIfAvailable(saved.state);
     if (!release) {
       throw new Error(
-        `Saved slot ${saved.state.slot} is busy (${saved.state.frontendPort}/${saved.state.studioPort}). It may already be running for this worktree.`,
+        `Saved slot ${saved.state.slot} is busy (${saved.state.frontendPort}). It may already be running for this worktree.`,
       );
     }
     try {
@@ -360,13 +332,4 @@ export async function allocatePorts({
   }
 
   throw new Error(`All ${SLOT_COUNT} worktree port slots are busy.`);
-}
-
-export function desiredSanityOrigins() {
-  return Array.from({ length: SLOT_COUNT }, (_, slot) => portsForSlot(slot)).flatMap(
-    ({ frontendPort, studioPort }) => [
-      { origin: `http://localhost:${frontendPort}`, credentials: true },
-      { origin: `http://localhost:${studioPort}`, credentials: true },
-    ],
-  );
 }

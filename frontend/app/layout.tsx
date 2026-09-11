@@ -1,30 +1,14 @@
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
-import { siteUrl } from "@/lib/site-url";
-import { siteName } from "@/lib/site-name";
 import { Toaster } from "@/components/ui/sonner";
 
-const isProduction = process.env.NEXT_PUBLIC_SITE_ENV === "production";
-
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
   title: {
-    template: `%s | ${siteName}`,
-    default: siteName,
+    template: "%s | VA Loans for Vets CRM",
+    default: "VA Loans for Vets CRM",
   },
-  openGraph: {
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_SITE_URL}/images/og-image.jpg`,
-        width: 1200,
-        height: 630,
-      },
-    ],
-    locale: "en_US",
-    type: "website",
-  },
-  robots: !isProduction ? "noindex, nofollow" : "index, follow",
+  robots: "noindex, nofollow",
 };
 
 export default function RootLayout({
@@ -34,7 +18,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <link rel="icon" href="/favicon.ico" />
       <body>
         <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up">
           {children}

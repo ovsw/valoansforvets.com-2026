@@ -41,8 +41,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# sanity dataset exports (backups taken before destructive/verification work)
-studio/backups/
 .env*
 !.env.example
 !.env*.example
@@ -53,4 +51,3 @@ studio/backups/
 .codex/config.toml
 /.worktree-ports.json
 /.worktree-ports.json.*.tmp
-/.page-builder-generator.lock/
