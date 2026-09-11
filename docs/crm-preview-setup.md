@@ -62,7 +62,7 @@ passed; this is not a restore rehearsal. A full restore test is still pending.
 
 Open <https://valoansforvets-crm.vercel.app/crm>. Vercel serves `main`; the
 Trigger workflow deploys the hosted `prod` test worker when its files change.
-The old alias remains until cutover. No hosted Sanity Studio or dataset is
+The old alias redirects to the new CRM domain. No hosted Sanity Studio or dataset is
 part of this CRM. Existing hosted Sanity data was preserved.
 
 The list and counts cover the latest 20 records. Any authorized staff member
@@ -86,3 +86,13 @@ marked message `071485b9-7033-46b8-816c-1ad52746b26d` Delivered. Concurrent
 replays retained that message ID. The CRM showed database saved, job complete,
 email accepted, and SMS simulated. Anonymous, unverified, non-staff,
 production-database, recipient, and retry-boundary checks also passed.
+
+## Standalone hosted verification — 2026-09-11
+
+The CRM-only deployment passed the release gate and worker deployment.
+Chromium verification confirmed root routing, approved staff access, retained
+records, and inquiry details. One approved inquiry,
+`1ef5645b-11de-499d-b5f7-85b06def73b7`, completed through the hosted worker.
+Resend marked email `a6911c04-8aa9-4495-b01c-9e22d617e894` Delivered to the
+approved test address. SMS remained simulated. The four earlier inquiries
+were preserved; the test brings the total to five.

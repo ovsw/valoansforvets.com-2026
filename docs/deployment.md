@@ -16,8 +16,8 @@ Production deploys use `main`. Set variables from
 the staff and test-recipient allowlists. The application remains a private
 test CRM until a real production data flow exists.
 
-The old `valoansforvets-com-2026.vercel.app` alias remains until cutover and
-will then redirect to the new CRM URL.
+The old `valoansforvets-com-2026.vercel.app` alias redirects to the new CRM
+URL with status 307 and preserves the path. It does not host a separate app.
 
 ## Trigger.dev
 

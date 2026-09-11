@@ -1,6 +1,6 @@
 # Standalone CRM migration
 
-Status: in progress. Owner: primary agent. Updated: 2026-09-11.
+Status: complete. Owner: primary agent. Updated: 2026-09-11.
 
 ## Approved outcome
 
@@ -20,9 +20,9 @@ until this session ends. Preserve hosted Sanity data; remove app coupling.
 - [x] Simplify workspace, CI, and documentation.
 - [x] Transfer and rename existing Vercel project to Studio ROVST; retain test services.
 - [x] Run local checks and one CodeRabbit review; fix material findings.
-- [ ] Publish verified code and verify hosted app in Chromium extension browser.
-- [ ] Retire the old hosted test app after new deployment passes.
-- [ ] Record final URLs, evidence, and remaining product work.
+- [x] Publish verified code and verify hosted app in Chromium extension browser.
+- [x] Retire the old hosted test URL through a path-preserving redirect.
+- [x] Record final URLs, evidence, and remaining product work.
 
 ## Safety and release checks
 
@@ -78,3 +78,31 @@ draft routes 404. No new inquiry or outbound message sent during these checks.
 
 CodeRabbit frontend review completed with zero findings. No second review
 will run after this initial review. Workspace/CI changes inspected directly.
+
+## Completed cutover
+
+- Private repository: https://github.com/ovsw/valoansforvets-crm.
+- CRM: https://valoansforvets-crm.vercel.app (root redirects to /crm).
+- Vercel: https://vercel.com/studio-rovst/valoansforvets-crm.
+- Verified app commit: e10c043ceba3d1236e4606c498fd37ec104d42fe.
+- Vercel deployment: dpl_9KYBgo1bBeLWMFthkmbQcGSX6TWK, Ready.
+- Release gate: https://github.com/ovsw/valoansforvets-crm/actions/runs/34598023909 (success).
+- Hosted worker: https://github.com/ovsw/valoansforvets-crm/actions/runs/34598023957 (success).
+- New named checkout: /work/dev/val/valoansforvets-crm. Dependencies installed
+  from the frozen lockfile; ignored local CRM settings and ROVST project link
+  retained. Existing worktree paths remain intact for open sessions.
+- Old domain returns 307 to the new domain, preserving both / and /crm.
+- Removed 14 unused website Vercel env entries and six obsolete CI variables.
+  Retained Clerk, Neon test, Trigger, and test messaging settings. Removed
+  the unused DATABASE_URL from hosting; no database or hosted Sanity data deleted.
+- User approved one test email. Hosted inquiry
+  1ef5645b-11de-499d-b5f7-85b06def73b7 completed. Resend dashboard confirmed
+  a6911c04-8aa9-4495-b01c-9e22d617e894 Delivered. No SMS sent. All four
+  prior inquiries remain; five total records after verification.
+
+## Remaining product work (outside this migration)
+
+Public quiz/intake API, booking, real nurture automation, production customer
+data setup, custom sender domain, real SMS, and a full database restore
+rehearsal remain separate work. The deployed application is still a staff-only
+test CRM. Hosted Sanity content and old Git history are preserved.

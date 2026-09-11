@@ -1,6 +1,6 @@
 # VALoansForVets CRM
 
-`valoansforvets-crm` is one private internal CRM for the teams behind
+`valoansforvets-crm` is one private internal CRM for the team behind
 PHXHomeLoan.com and VALoansForVets.com. This repository owns the staff
 interface, database integration, and Trigger.dev worker.
 
@@ -40,7 +40,12 @@ Useful checks are `pnpm typecheck`, `pnpm lint`, `pnpm test`, and
 
 The hosted test application is <https://valoansforvets-crm.vercel.app/crm>.
 The Vercel project is `prj_YY6MeizqVoVEnsg7MRI41oD572D5` in the paid Studio
-ROVST team. The old Vercel alias remains during cutover.
+ROVST team. The old Vercel alias redirects to the new address.
 
 See [CRM development flow](docs/crm-preview-setup.md) and
 [deployment](docs/deployment.md).
+
+## Migration record
+
+The repository and hosted project were repurposed on 2026-09-11.
+See [migration status and verification](docs/plans/crm-migration.md).
